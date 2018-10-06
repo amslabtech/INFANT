@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+		<node name="map_tf" pkg="local_planner" type="map_tf" />
+        <node name="speed_control" pkg="local_planner" type="speed_control" />
+        <node name="local_goal_creator" pkg="local_planner" type="local_goal_creator" />
+        <node name="rwrc17_trajectory_manager" pkg="local_planner" type="trajectory_manager"/>
+        <node name="generate_server" pkg="local_planner" type="generate_server" />
+		<!-- <node name="visu_path" pkg="local_planner" type="visu_path" /> -->
+		<!-- <node name="visu_select_path" pkg="local_planner" type="visu_select_path" /> -->
+		<node name="motion_decision" pkg="local_planner" type="motion_decision" />
+
+        <!-- <node name="visu_lmap_gc" pkg="human_following" type="visu_lmap_gc" /> -->
+        <!-- <node name="rwrc15_measure_f_dist" pkg="rwrc15_human_following" type="rwrc15_measure_f_dist" /> -->
+</launch>
