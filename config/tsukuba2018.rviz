@@ -304,13 +304,50 @@ Visualization Manager:
       Reference Frame: velodyne
       Value: true
     - Alpha: 1
-      Class: rviz/PointStamped
-      Color: 255; 0; 127
+      Axes Length: 1
+      Axes Radius: 0.100000001
+      Class: rviz/Pose
+      Color: 255; 25; 0
       Enabled: true
-      History Length: 1
-      Name: PointStamped
-      Radius: 0.5
+      Head Length: 0
+      Head Radius: 0
+      Name: Pose
+      Shaft Length: 0.100000001
+      Shaft Radius: 0.100000001
+      Shape: Arrow
       Topic: /local_goal
+      Unreliable: false
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /plan/localpath_vis_shogo
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /plan/path_recomend_shogo
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Arrow Length: 0.300000012
+      Axes Length: 0.300000012
+      Axes Radius: 0.00999999978
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
+      Name: PoseArray
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Arrow (Flat)
+      Topic: /plan/poses
       Unreliable: false
       Value: true
   Enabled: true
