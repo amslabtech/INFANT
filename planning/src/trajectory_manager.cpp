@@ -24,7 +24,7 @@ using namespace std;
 
 //const string header_frame("/map");
 //const string robot_frame("/matching_base_link");
-const string header_frame("/odom");
+const string header_frame("/localmap");
 const string robot_frame("/velodyne");
 
 //callback mutex
