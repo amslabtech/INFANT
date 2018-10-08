@@ -4,7 +4,7 @@
 #include <trajectory_generation/VelocityArray.h>
 #include <cstdlib>
 #include <tf/transform_listener.h>
-#include <local_planner/Velocity.h>
+#include <infant_planning/Velocity.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/Float32.h>
@@ -32,7 +32,7 @@ float THRESH_ANG=0.25*M_PI;//HALF_PI
 ros::Publisher vel_pub;
 int time_count=0;
 bool v_a_flag=false, cheat_flag=false, joy_flag=false, t_wp_flag=false, em_flag=false;
-local_planner::Velocity cheat_vel;
+infant_planning::Velocity cheat_vel;
 boost::mutex v_array_mutex_;
 trajectory_generation::VelocityArray g_v_array; 
 geometry_msgs::PoseStamped t_wp;
@@ -58,13 +58,13 @@ float calcRelativeAngle(geometry_msgs::PoseStamped& wp, geometry_msgs::PoseStamp
 	return wp_ang-robo.pose.orientation.z;
 }
 
-void setStopCommand(local_planner::Velocity& cmd_vel)
+void setStopCommand(infant_planning::Velocity& cmd_vel)
 {
 	cmd_vel.op_linear = 0;
 	cmd_vel.op_angular = 0;
 }
 
-void setTurnCommand(local_planner::Velocity& cmd_vel,
+void setTurnCommand(infant_planning::Velocity& cmd_vel,
 					geometry_msgs::PoseStamped& wp,
 					geometry_msgs::PoseStamped& robo)
 {
@@ -78,7 +78,7 @@ void setTurnCommand(local_planner::Velocity& cmd_vel,
 }
 
 void commandDecision(	trajectory_generation::VelocityArray& v_a,
-						local_planner::Velocity& cmd_vel)
+						infant_planning::Velocity& cmd_vel)
 {
 	// float hoge = 0.6*10.0/0.4;
 	float hoge = 15;
@@ -174,7 +174,7 @@ void MotionDecision()
 	ros::Subscriber stop_Tflag_sub = n.subscribe("/stop_for_trace", 1, StopTraceFlagCallback);
 	ros::Subscriber sub_stop_flag = n.subscribe("/fin_goal_arrival", 1, FinGoalArrivalCallback);
 
-	vel_pub = n.advertise<local_planner::Velocity>("tinypower/command_velocity", 10);
+	vel_pub = n.advertise<infant_planning::Velocity>("tinypower/command_velocity", 10);
 	//for debug
 	ros::Publisher mode_pub = n.advertise<std_msgs::Int32>("running_mode", 1);
 	
@@ -183,7 +183,7 @@ void MotionDecision()
 	bool normal_flag=true;
 	bool stop_flag=false;
 	// float relative_ang=0;
-	local_planner::Velocity cmd_vel;
+	infant_planning::Velocity cmd_vel;
     tf::StampedTransform transform;
     tf::TransformListener listener;
 	geometry_msgs::PoseStamped robo;
