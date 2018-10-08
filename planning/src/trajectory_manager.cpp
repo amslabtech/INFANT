@@ -22,8 +22,10 @@
 #define TRACE 1
 using namespace std;
 
-const string header_frame("/map");
-const string robot_frame("/matching_base_link");
+//const string header_frame("/map");
+//const string robot_frame("/matching_base_link");
+const string header_frame("/odom");
+const string robot_frame("/velodyne");
 
 //callback mutex
 boost::mutex l_goal_mutex_;
@@ -179,7 +181,7 @@ void trjSetMode(trajectory_generation::TrajectoryGeneration& trj, tf::StampedTra
     float angle = tf::getYaw(transform.getRotation());
     trj.request.start.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0,0,angle);
     trj.request.goal = invhomoTrance(l_goal,trj.request.start);
-	// cout<<"Local goal callbacked !!!!"<<endl;
+	cout<<"Local goal callbacked !!!!"<<endl;
 }
 
 void showPath(nav_msgs::Path& path, ros::Publisher& pub)

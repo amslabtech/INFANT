@@ -24,8 +24,10 @@ const float Lmax = 6.0;
 // const float MaxAngle = 1.2;
 const float MaxAngle = 1.2;
 
-const string header_frame("/map");
-const string header_frame2("/matching_base_link");
+//const string header_frame("/map");
+//const string header_frame2("/matching_base_link");
+const string header_frame("/localmap");
+const string header_frame2("/velodyne");
 using namespace std;
 
 //-----------Pathの構造体-----------//
@@ -50,7 +52,8 @@ TrajectoryGeneration trajectory(16.0, -16.0,		//curvature
 //ShapeParameter p_ss = {1000, 31, 3, 7.0, -1.6, 1.6, -0.7, 0.7};
 //ShapeParameter p_ss = {1000, 9, 3, 7.0, -0.8, 0.8, -0.7, 0.7};	//20151101
 //ShapeParameter p_ss = {1000, 9, 5, 7.0, -1.2, 1.2, -0.9, 0.9};	//20151105
-ShapeParameter p_ss = {1000, 31, 5, 10.0, -1.6, 1.6, -0.9, 0.9};	//20170224
+//ShapeParameter p_ss = {1000, 31, 5, 10.0, -1.6, 1.6, -0.9, 0.9};	//20170224
+ShapeParameter p_ss = {1000, 9, 3, 10.0, -0.8, 0.8, -0.7, 0.7};
 //	{n_s:固定値，n_p:目的地数，n_h:目的地あたりの本数，d:pathの長さ，alpha_min:角度，alpha_max:角度，psi_min(max)目的地での角度の開き}
 
 
@@ -209,7 +212,7 @@ void showPoses(geometry_msgs::PoseArray poses)
 	poses.header.frame_id = header_frame2;
 	poses.header.stamp=ros::Time::now();
 	
-	// pub.publish(poses);
+	pub.publish(poses);
 }
 void showPose(geometry_msgs::PoseStamped target)
 {
@@ -221,7 +224,7 @@ void showPose(geometry_msgs::PoseStamped target)
 	target.header.frame_id = header_frame;
 	target.header.stamp=ros::Time::now();
 	
-	// pub.publish(target);
+	//pub.publish(target);
 }
 
 
@@ -366,7 +369,7 @@ int pickUpTrajectory(list<PathState> path_array,
 	showPose(goal);
 	float min_cost = INFINITY;
 	int iii=0;
-	////////////////////std::cout<<"num candidate of path: "<< path_array_tmp.size()<< std::endl;
+	std::cout<<"num candidate of path: "<< path_array_tmp.size()<< std::endl;
 	for(vector<PathState>::iterator it = path_array_tmp.begin();it != path_array_tmp.end(); ++it){
 		float dyaw = fabs(tf::getYaw(goal.pose.orientation)-tf::getYaw((*it).goal.pose.orientation));
 		if(min_cost > dyaw){
@@ -449,6 +452,9 @@ bool server(trajectory_generation::TrajectoryGeneration::Request  &req,
 	generatePathArray(req, boundary_state, path_array);
 	
 	PathState pick_up_path;
+	showPose(req.goal);
+	req.goal.header.frame_id = header_frame;
+	cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << req.goal << endl;
 	res.tolerance = pickUpTrajectory(path_array, pick_up_path, req.goal);
 	
 	res.path.poses.clear();
@@ -471,7 +477,8 @@ bool server(trajectory_generation::TrajectoryGeneration::Request  &req,
 
 int main(int argc, char **argv)
 {
-	const string package_path_str("/home/amsl/ros_catkin_ws/src/path/local_planner");
+	const string package_path_str("/home/amsl/ros_catkin_ws/src/INFANT/planning");
+	//const string package_path_str("/home/amsl/ros_catkin_ws/src/path/local_planner");
 	// const string package_path_str("/home/amsl/AMSL_ros_pkg/rwrc16/rwrc16_human_following");
 	trajectory.fileInput(package_path_str+"/look_up_table/infant/v-03.bin",-0.3);
 	trajectory.fileInput(package_path_str+"/look_up_table/infant/v-02.bin",-0.2);
@@ -494,7 +501,8 @@ int main(int argc, char **argv)
 	ros::Publisher pub3 = n.advertise<visualization_msgs::MarkerArray>("plan/path_recomend_shogo", 100);
 	ros::Publisher pub2 = n.advertise<geometry_msgs::PoseArray>("plan/poses", 100);
 	ros::ServiceServer service = n.advertiseService("/plan/local_path", server);
-	ros::Subscriber sub1 = n.subscribe("/local_map/expand/gc", 5, mapCallback);
+	ros::Subscriber sub1 = n.subscribe("/local_map", 5, mapCallback);
+	//ros::Subscriber sub1 = n.subscribe("/local_map/expand/gc", 5, mapCallback);
 	ros::Subscriber sub_odom = n.subscribe("/tinypower/odom", 5, odomCallback);
 	ros::Subscriber mode_sub = n.subscribe("/wp_mode", 1, WpModeCallback);
 	// ros::Subscriber sub1 = n.subscribe("/local_map/global_coord/expanded", 1, mapCallback);
@@ -509,8 +517,6 @@ int main(int argc, char **argv)
 		boost::mutex::scoped_lock(array_pub_mutex_);	
 		_array_pub = pub3;
 	}
-	
-	
 	ROS_INFO("generate_server start.");
 	
 	ros::spin();
