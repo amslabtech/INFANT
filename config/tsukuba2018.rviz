@@ -3,9 +3,7 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Global Options1
-        - /Status1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 505
   - Class: rviz/Selection
@@ -296,6 +294,21 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.100000001
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.300000012
+      Head Radius: 0.200000003
+      Name: Pose
+      Shaft Length: 0.5
+      Shaft Radius: 0.100000001
+      Shape: Arrow
+      Topic: /local_goal
+      Unreliable: false
+      Value: true
     - Class: rviz/Axes
       Enabled: true
       Length: 1
@@ -323,7 +336,7 @@ Visualization Manager:
       Marker Topic: /plan/localpath_vis_shogo
       Name: Marker
       Namespaces:
-        {}
+        OnlyPath: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -331,7 +344,7 @@ Visualization Manager:
       Marker Topic: /plan/path_recomend_shogo
       Name: MarkerArray
       Namespaces:
-        {}
+        PathSet: true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -340,7 +353,7 @@ Visualization Manager:
       Axes Radius: 0.00999999978
       Class: rviz/PoseArray
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.0700000003
       Head Radius: 0.0299999993
       Name: PoseArray
@@ -349,12 +362,12 @@ Visualization Manager:
       Shape: Arrow (Flat)
       Topic: /plan/poses
       Unreliable: false
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: velodyne
+    Fixed Frame: localmap
     Frame Rate: 30
   Name: root
   Tools:
@@ -375,16 +388,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 17.5757427
+      Distance: 17.4807816
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 0.216107681
+        Y: 0.0626778603
+        Z: 0.000215066975
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
@@ -393,7 +406,7 @@ Visualization Manager:
       Pitch: 1.56979632
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.14039731
+      Yaw: 3.13539505
     Saved: ~
 Window Geometry:
   Displays:
