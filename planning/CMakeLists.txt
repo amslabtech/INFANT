@@ -156,10 +156,7 @@ add_executable(motion_decision src/motion_decision.cpp)
 add_executable(generate_server src/generate_server.cpp)
 add_executable(speed_control src/speed_control.cpp)
 add_executable(trajectory_manager src/trajectory_manager.cpp)
-add_executable(map_tf src/map_tf.cpp)
-add_executable(test_local_goal src/test_local_goal.cpp)
 add_executable(dijkstra_sawa src/dijkstra_sawa.cpp)
-add_executable(sawa_local_goal src/sawa_local_goal.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -173,10 +170,7 @@ target_link_libraries(motion_decision ${catkin_LIBRARIES})
 target_link_libraries(generate_server Visualize_lib trajectory_generation boundary_state LocalPlanning_lib ${catkin_LIBRARIES})
 target_link_libraries(speed_control ${catkin_LIBRARIES})
 target_link_libraries(trajectory_manager Visualize_lib ${catkin_LIBRARIES})
-target_link_libraries(map_tf ${catkin_LIBRARIES})
-target_link_libraries(test_local_goal ${catkin_LIBRARIES})
 target_link_libraries(dijkstra_sawa ${catkin_LIBRARIES})
-target_link_libraries(sawa_local_goal ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############

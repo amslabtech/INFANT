@@ -1,11 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-		<!-- <node name="map_tf" pkg="infant_planning" type="map_tf" /> -->
         <node name="speed_control" pkg="infant_planning" type="speed_control" />
-		<!-- <node name="local_goal_creator" pkg="infant_planning" type="local_goal_creator" /> -->
         <node name="trajectory_manager" pkg="infant_planning" type="trajectory_manager"/>
         <node name="generate_server" pkg="infant_planning" type="generate_server" />
 		<!-- <node name="motion_decision" pkg="infant_planning" type="motion_decision" /> -->
 
-        <!-- <node name="rwrc15_measure_f_dist" pkg="rwrc15_human_following" type="rwrc15_measure_f_dist" /> -->
 </launch>

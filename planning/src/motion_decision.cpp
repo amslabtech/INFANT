@@ -20,8 +20,10 @@
 
 using namespace std;
 
-const string header_frame("/map");
-const string robot_frame("/matching_base_link");
+const string header_frame("/localmap");
+const string robot_frame("/velodyne");
+//const string header_frame("/map");
+//const string robot_frame("/matching_base_link");
 const float Vmax=0.9;
 const float ANGULARmax=1.0; 
 const float ANGULARmin=0.1;
