@@ -13,10 +13,14 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   PCL REQUIRED
+  cv_bridge
+  image_transport
+  pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenCV REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -121,6 +125,7 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -202,6 +207,8 @@ include_directories(
 # catkin_add_nosetests(test)
 add_executable(occupancygrid_lidar src/occupancygrid_lidar.cpp)
 target_link_libraries(occupancygrid_lidar ${catkin_LIBRARIES})
+add_executable(occupancygrid_zed src/occupancygrid_zed.cpp)
+target_link_libraries(occupancygrid_zed ${catkin_LIBRARIES})
 add_executable(occupancygrid_store src/occupancygrid_store.cpp)
 target_link_libraries(occupancygrid_store ${catkin_LIBRARIES})
 add_executable(tf_broadcaster src/tf_broadcaster.cpp)
@@ -210,3 +217,5 @@ add_executable(pc_transformer src/pc_transformer.cpp)
 target_link_libraries(pc_transformer ${catkin_LIBRARIES})
 add_executable(longest_path_detection src/longest_path_detection.cpp)
 target_link_libraries(longest_path_detection ${catkin_LIBRARIES})
+add_executable(grass2grid src/grass2grid.cpp)
+target_link_libraries(grass2grid ${catkin_LIBRARIES} ${OpenCV_LIBS})
