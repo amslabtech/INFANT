@@ -13,5 +13,5 @@
 
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
     <node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
-    <node pkg="infant_recognition" type="longest_path_detection" name="longest_path_detection" output="screen"/>
+	<!--    <node pkg="infant_recognition" type="longest_path_detection" name="longest_path_detection" output="screen"/> -->
 </launch>
