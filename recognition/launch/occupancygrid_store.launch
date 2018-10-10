@@ -1,7 +1,8 @@
 <launch>
     <param name="use_sim_time" value="true"/>
     
-    <node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -s 250"/>
+	<!-- <node pkg="rosbag" type="play" name="player" args="- -clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -s 250"/> -->
+    <node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/bagfiles/2018-10-01-21-47-44.bag"/>
 
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find infant_recognition)/../config/tsukuba2018.rviz"/>
     

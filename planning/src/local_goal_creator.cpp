@@ -12,6 +12,8 @@ bool map_received = false;
 bool intersection = false;
 bool target_received = false;
 float target_orientation = 0.0;
+float MARGIN_ANGLE = 0.3;
+double longest_path_length_angle = 0.0;
 
 void TargetCallback(const std_msgs::Float32ConstPtr& msg)
 {
@@ -21,7 +23,9 @@ void TargetCallback(const std_msgs::Float32ConstPtr& msg)
 
 void IntersectionCallback(const std_msgs::BoolConstPtr& msg)
 {
-	intersection = msg->data;
+	if(msg->data){
+		intersection = true;
+	}
 }
 
 void MapCallback(const nav_msgs::OccupancyGridConstPtr& msg)
@@ -67,19 +71,22 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 	double roll, pitch, yaw;
 	tf::Matrix3x3(transform.getRotation()).getRPY(roll, pitch, yaw);
 	
+	double goal_diff_angle = fabs(yaw - longest_path_length_angle);
+	if(goal_diff_angle > 6.2){
+		goal_diff_angle -= 6.2;
+	}
 	if(intersection){
 	  yaw = target_orientation;
 	}
 	
 	const double angle_step = 10.0;	//[deg]
-	const double angle_range = 90.0;	//[deg]
+	const double angle_range = 45.0;	//[deg]
 	double search_range = local_map.info.width*local_map.info.resolution*0.5;
 	if(search_range>local_map.info.height*local_map.info.resolution)	search_range = local_map.info.height*local_map.info.resolution;
 	search_range -= 1.0;
 	bool reached_end = false;
 
 	double longest_path_length = 0.0;
-	double longest_path_length_angle = 0.0;
 	for(double step=0.0;step<=angle_range;step+=angle_step){
 		double path_length = 0.0;
 		double theta = yaw + step/180.0*M_PI;
@@ -105,11 +112,16 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 		if(reached_end)	break;
 	}
 
+	if(goal_diff_angle < MARGIN_ANGLE){
+	  std::cout<< "end_trun" << std::endl;
+	  intersection = false;
+	}
 	goal.header = local_map.header;
 	goal.pose.position.x = longest_path_length*cos(longest_path_length_angle); 
 	goal.pose.position.y = longest_path_length*sin(longest_path_length_angle); 
 	goal.pose.position.z = 0.0;
 	goal.pose.orientation = tf::createQuaternionMsgFromYaw(longest_path_length_angle);
+	std::cout << "goal diff angle:" << goal_diff_angle << std::endl;
 }
 
 void LocalGoalCreator()
@@ -128,7 +140,7 @@ void LocalGoalCreator()
 	if(map_received && target_received){
 	  std::cout << "intersection:"<< intersection << std::endl;
 	  detection_main(local_goal);
-	  std::cout << local_goal << std::endl;
+	  //std::cout << local_goal << std::endl;
 	  pub_goal.publish(local_goal);
 	}
 	ros::spinOnce();
