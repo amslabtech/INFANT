@@ -14,6 +14,7 @@ nav_msgs::Odometry odom;
 ros::Time time_odom_now;
 ros::Time time_odom_last;
 bool first_callback_odom = true;
+bool first_callback_grid = true;
 double theta = 0.0;
 double delta_x = 0.0;
 double delta_y = 0.0;
@@ -187,6 +188,17 @@ void grid_update_zed(void)
 	}
 }
 
+void initialize_around_startpoint(void)
+{
+	const double initialize_range_meter = 2.0;	//[m]
+	int range = initialize_range_meter/grid_store.info.resolution;
+	for(int i=-range;i<=range;i++){
+		for(int j=-range;j<=range;j++){
+			grid_store.data[point_to_index(grid_store, i, j)] = 0;
+		}
+	}
+}
+
 void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 {
 	// std::cout << "- CALLBACK GRID -" << std::endl;
@@ -197,6 +209,9 @@ void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 	// ambiguity_filter(grid_now);
 	grid_update_lidar();
 	ambiguity_filter(grid_store);
+
+	if(first_callback_grid)	initialize_around_startpoint();
+	first_callback_grid = false;
 }
 
 void callback_grid_zed(const nav_msgs::OccupancyGridConstPtr& msg)
