@@ -31,30 +31,31 @@ float THRESH_ANG=0.25*M_PI;//HALF_PI
 
 ros::Publisher vel_pub;
 int time_count=0;
-bool v_a_flag=false, cheat_flag=false, joy_flag=false, t_wp_flag=false;
+bool v_a_flag=false, cheat_flag=false, joy_flag=false, target_flag=false;
 infant_planning::Velocity cheat_vel;
 boost::mutex v_array_mutex_;
 trajectory_generation::VelocityArray g_v_array; 
-geometry_msgs::PoseStamped t_wp;
+float target=0.0;
 int mode=0;
 float n_dist=0;
 
-float calcRelativeAngle(geometry_msgs::PoseStamped& wp, geometry_msgs::PoseStamped& robo)
+float normalize(float z)
 {
-	float dx=wp.pose.position.x-robo.pose.position.x;
-	float dy=wp.pose.position.x-robo.pose.position.y;
-	float wp_ang;
-	if (fabs(dx)<=0.01 && dy>=0) wp_ang = HALF_PI; //vertical
-	else if (fabs(dx)<=0.01 && dy<0) wp_ang = -HALF_PI;
-	else{
-		wp_ang=atan(dy/dx);
-		if (dx<0 && dy>0) wp_ang += M_PI;
-		else if (dx<0 && dy<0) wp_ang += -M_PI;
-	} 
-
-	//cout<<"wp-robo:"<<wp_ang*180.0/M_PI<<endl;
-	//cout<<"relative:"<<(wp_ang-robo.pose.orientation.z)*180.0/M_PI<<endl;
-	return wp_ang-robo.pose.orientation.z;
+  return atan2(sin(z),cos(z));
+}
+float angle_diff(float a, float b)
+{
+  float d1, d2;
+  a = normalize(a);
+  b = normalize(b);
+  d1 = a-b;
+  d2 = 2*M_PI - fabs(d1);
+  if(d1 > 0)
+    d2 *= -1.0;
+  if(fabs(d1) < fabs(d2))
+    return(d1);
+  else
+    return(d2);
 }
 
 void setStopCommand(infant_planning::Velocity& cmd_vel)
@@ -64,13 +65,12 @@ void setStopCommand(infant_planning::Velocity& cmd_vel)
 }
 
 void setTurnCommand(infant_planning::Velocity& cmd_vel,
-					geometry_msgs::PoseStamped& wp,
-					geometry_msgs::PoseStamped& robo)
+					float& target,
+					float& robo)
 {
 	float turn_angular = 0.3;
-//	float turn_angular = 0.2;
 	float turn_dir = 1;
-	if (calcRelativeAngle(wp, robo)<0) turn_dir=-1;
+	if(angle_diff(target, robo)<0) turn_dir=-1;
 	cmd_vel.op_linear = 0;
 	cmd_vel.op_angular = turn_dir * turn_angular;
 	cout<<"now turn"<<endl;
@@ -93,17 +93,12 @@ void commandDecision(	trajectory_generation::VelocityArray& v_a,
 	//cout<<"lin1 = "<<cmd_vel.op_linear<<"\tang1 = "<<cmd_vel.op_angular<<endl;
 }
 
-inline bool checkTF(tf::StampedTransform& transform, geometry_msgs::PoseStamped& robo, tf::TransformListener& listener)
+inline bool checkTF(tf::StampedTransform& transform, float& robot_yaw, tf::TransformListener& listener)
 {
 	try{
 		//listener.waitForTransform(header_frame, robot_frame, ros::Time(0), ros::Duration(1.0));
 	    listener.lookupTransform(header_frame, robot_frame, ros::Time(0), transform);
-        robo.pose.position.x=transform.getOrigin().x();
-        robo.pose.position.y=transform.getOrigin().y();
-        robo.pose.position.z=0;
-        robo.pose.orientation.z = tf::getYaw(transform.getRotation());
-        // float angle = tf::getYaw(transform.getRotation());
-        // robo.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0,0,angle);
+        robot_yaw = tf::getYaw(transform.getRotation());
 		return true;
 	}
 	catch (tf::TransformException ex){
@@ -127,10 +122,10 @@ void NormalDistCallback(const std_msgs::Float32ConstPtr& msg)
 	n_dist=msg->data;
 }
 
-void TargetWpCallback(const geometry_msgs::PoseStampedConstPtr& msg)
+void TargetCallback(const std_msgs::Float32ConstPtr& msg)
 {
-	t_wp=*msg;
-	t_wp_flag=true;
+	target=msg->data;
+	target_flag=true;
 }
 
 void vArrayCallback(const trajectory_generation::VelocityArrayConstPtr& msg)
@@ -152,7 +147,7 @@ void MotionPlanner()
 	ros::Subscriber cntl_sub       = n.subscribe("/joy", 10, JoyCallback);
 	ros::Subscriber cheat_sub       = n.subscribe("/tinypower/cheat_velocity", 10, CheatCallback);
 	ros::Subscriber v_array_sub    = n.subscribe("/plan/velocity_array", 10, vArrayCallback);
-	ros::Subscriber twp_sub        = n.subscribe("/target/pose", 10, TargetWpCallback);
+	ros::Subscriber target_sub        = n.subscribe("/target", 10, TargetCallback);
 	ros::Subscriber norm_dist_sub  = n.subscribe("/waypoint/normal_dist", 10, NormalDistCallback);
 	
 	ros::Subscriber mode_sub = n.subscribe("/mode",1,ModeCallback);
@@ -165,13 +160,13 @@ void MotionPlanner()
 	infant_planning::Velocity cmd_vel;
     tf::StampedTransform transform;
     tf::TransformListener listener;
-	geometry_msgs::PoseStamped robo;
+	float robot_yaw;
 
 	ros::Rate loop_rate(10);
 	while(ros::ok()){
 		//get robot position
-		bool tf_flag = checkTF(transform, robo, listener);
-		if (t_wp_flag && tf_flag && !cheat_flag){ //normal state
+		bool tf_flag = checkTF(transform, robot_yaw, listener);
+		if (target_flag && tf_flag && !cheat_flag){ //normal state
 			trajectory_generation::VelocityArray v_array; 
 			if (mode != 1){
 				if (v_a_flag){
@@ -200,7 +195,7 @@ void MotionPlanner()
 			}
 			else if (mode == 1 || turn_flag){
 				cout<<"turn"<<endl;
-				setTurnCommand(cmd_vel, t_wp, robo);
+				setTurnCommand(cmd_vel, target, robot_yaw);
 				stop_count=0;
 				turn_flag = false;
 			}
@@ -236,7 +231,7 @@ void MotionPlanner()
 		else { //waiting for callback
 			cout<<"-----------"<<endl;
 			cout<<"v_arr:"<<v_a_flag<<endl;
-			cout<<"t_wp:"<<t_wp_flag<<endl;
+			cout<<"target:"<<target_flag<<endl;
 			cout<<"tf_flag:"<<tf_flag<<endl;
 			cout<<"cheat_flag:"<<cheat_flag<<endl;
 			cout<<"-----------"<<endl;
