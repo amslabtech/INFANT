@@ -152,6 +152,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 ## Declare a C++ executable
 # add_executable(local_planner_node src/local_planner_node.cpp)
+add_executable(motion_planner src/motion_planner.cpp)
 add_executable(motion_decision src/motion_decision.cpp)
 add_executable(generate_server src/generate_server.cpp)
 add_executable(speed_control src/speed_control.cpp)
@@ -167,6 +168,7 @@ add_executable(local_goal_creator src/local_goal_creator.cpp)
 # target_link_libraries(local_planner_node
 #   ${catkin_LIBRARIES}
 # )
+target_link_libraries(motion_planner ${catkin_LIBRARIES})
 target_link_libraries(motion_decision ${catkin_LIBRARIES})
 target_link_libraries(generate_server Visualize_lib trajectory_generation boundary_state LocalPlanning_lib ${catkin_LIBRARIES})
 target_link_libraries(speed_control ${catkin_LIBRARIES})

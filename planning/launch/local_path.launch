@@ -3,6 +3,6 @@
         <node name="speed_control" pkg="infant_planning" type="speed_control" />
         <node name="trajectory_manager" pkg="infant_planning" type="trajectory_manager"/>
         <node name="generate_server" pkg="infant_planning" type="generate_server" />
-		<!-- <node name="motion_decision" pkg="infant_planning" type="motion_decision" /> -->
+		<!-- <node name="motion_planner" pkg="infant_planning" type="motion_planner" /> -->
 
 </launch>

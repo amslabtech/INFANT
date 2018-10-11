@@ -604,7 +604,7 @@ void GlobalPathCreator()
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "dijkstra_sawa");
+    ros::init(argc, argv, "dijkstra");
 
     GlobalPathCreator();
 
