@@ -7,8 +7,8 @@ source ~/.bashrc
 
 gnome-terminal -e "/opt/ros/kinetic/bin/roscore" --geometry=50x12+20+20 &
 sleep 2s
-#gnome-terminal -e "/home/amsl/ros_catkin_ws/scripts/ssh_vanilla/zed_start_vanilla.sh" --geometry=50x12+20+270 &
-#gnome-terminal -e "/home/amsl/ros_catkin_ws/scripts/ssh_vanilla/zed_resize_vanilla.sh" --geometry=50x12+20+520 &
+gnome-terminal -e "/home/amsl/ros_catkin_ws/scripts/ssh_vanilla/zed_start_vanilla.sh" --geometry=50x12+20+270 &
+gnome-terminal -e "/home/amsl/ros_catkin_ws/scripts/ssh_vanilla/zed_resize_vanilla.sh" --geometry=50x12+20+520 &
 #gnome-terminal -e "/opt/ros/kinetic/bin/rosbag play /home/amsl/bagfiles/2018-09-15-14-08-49.bag" --geometry=50x12+20+270 &
 
 gnome-terminal -e "/home/amsl/ros_catkin_ws/src/INFANT/scripts/ssh_vanilla/republish.sh" --geometry=50x12+20+770 &

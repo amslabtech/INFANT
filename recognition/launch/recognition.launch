@@ -1,0 +1,13 @@
+<launch>
+    <node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
+
+    <node pkg="infant_recognition" type="pc_transformer" name="pc_transformer" output="screen"/>
+	<node pkg="infant_recognition" type="pc_transformer" name="rmground_transformer">
+		<remap from="/velodyne_points" to="/rm_ground2"/>
+		<remap from="/velodyne_points/transformed" to="/rm_ground2/transformed"/>
+	</node>
+
+    <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
+    <node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
+
+</launch>
