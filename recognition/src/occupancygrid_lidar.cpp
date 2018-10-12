@@ -210,7 +210,7 @@ void cloud_extraction(void)	//extraction
 			tmp_cloud_ground->points.push_back(tmp);
 		}
 	}
-	*cloud_obstacles = *tmp_cloud_obstacles;
+	// *cloud_obstacles = *tmp_cloud_obstacles;
 	*cloud_ground = *tmp_cloud_ground;
 }
 
@@ -222,8 +222,13 @@ void callback_cloud(const sensor_msgs::PointCloud2ConstPtr& msg)
 	cloud_extraction();
 	normal_estimation();
 	// normal_estimation_();
-	input_grid();
+	// input_grid();
 	// filter();
+}
+
+void callback_cloud_rmground(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+	pcl::fromROSMsg(*msg, *cloud_obstacles);
 }
 
 void grid_initialization(void)
@@ -251,6 +256,7 @@ int main(int argc, char** argv)
 
 	/*sub*/
 	ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points/transformed", 1, callback_cloud);
+	ros::Subscriber sub_cloud_rmground = nh.subscribe("/rm_ground2", 1, callback_cloud_rmground);
 	// ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points", 1, callback_cloud);
 	
 	/*pub*/
@@ -267,7 +273,9 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(40);
 	while(ros::ok()){
 		ros::spinOnce();
-		if(!cloud->points.empty()){
+		if(!cloud->points.empty() && !cloud_obstacles->points.empty()){
+			input_grid();
+			
 			sensor_msgs::PointCloud2 cloud_obstacles_;
 			pcl::toROSMsg(*cloud_obstacles, cloud_obstacles_);
 			cloud_obstacles_.header.frame_id = cloud->header.frame_id;
