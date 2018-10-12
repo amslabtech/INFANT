@@ -196,12 +196,12 @@ void cloud_extraction(void)	//extraction
 	// cloud_obstacles->points.clear();
 	// cloud_ground->points.clear();
 	
-	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
+	// pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
 	pcl::PointCloud<pcl::PointXYZINormal>::Ptr tmp_cloud_ground (new pcl::PointCloud<pcl::PointXYZINormal>);
 	
 	for(size_t i=0;i<cloud->points.size();i++){
-		if(point_is_obstacle(cloud->points[i]))	tmp_cloud_obstacles->points.push_back(cloud->points[i]);
-		else if(point_is_ground(cloud->points[i])){
+		// if(point_is_obstacle(cloud->points[i]))	tmp_cloud_obstacles->points.push_back(cloud->points[i]);
+		if(point_is_ground(cloud->points[i])){
 			pcl::PointXYZINormal tmp;
 			tmp.x = cloud->points[i].x;
 			tmp.y = cloud->points[i].y;
@@ -229,6 +229,12 @@ void callback_cloud(const sensor_msgs::PointCloud2ConstPtr& msg)
 void callback_cloud_rmground(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
 	pcl::fromROSMsg(*msg, *cloud_obstacles);
+	
+	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
+	for(size_t i=0;i<cloud_obstacles->points.size();i++){
+		if(fabs(cloud->points[i].x)<w/2.0 && fabs(cloud->points[i].y)<h/2.0)	tmp_cloud_obstacles->points.push_back(cloud->points[i]);
+	}
+	cloud_obstacles = tmp_cloud_obstacles;
 }
 
 void grid_initialization(void)
