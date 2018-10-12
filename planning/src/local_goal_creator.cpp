@@ -15,6 +15,25 @@ float target_orientation = 0.0;
 float MARGIN_ANGLE = 0.3;
 double longest_path_length_angle = 0.0;
 
+float normalize(float z)
+{
+  return atan2(sin(z),cos(z));
+}
+float angle_diff(float a, float b)
+{
+  float d1, d2;
+  a = normalize(a);
+  b = normalize(b);
+  d1 = a-b;
+  d2 = 2*M_PI - fabs(d1);
+  if(d1 > 0)
+    d2 *= -1.0;
+  if(fabs(d1) < fabs(d2))
+    return(d1);
+  else
+    return(d2);
+}
+
 void TargetCallback(const std_msgs::Float32ConstPtr& msg)
 {
   target_orientation = msg->data;
@@ -53,7 +72,7 @@ bool radial_search(double& path_length, double theta, double search_range)
 		}
 		x = path_length*cos(theta);
 		y = path_length*sin(theta);
-		if(local_map.data[meterpoint_to_index(local_map, x, y)]>0 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
+		if(local_map.data[meterpoint_to_index(local_map, x, y)]>50 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
 	}
 }
 void detection_main(geometry_msgs::PoseStamped& goal)
@@ -70,19 +89,17 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 
 	double roll, pitch, yaw;
 	tf::Matrix3x3(transform.getRotation()).getRPY(roll, pitch, yaw);
-	
-	double goal_diff_angle = fabs(yaw - longest_path_length_angle);
-	if(goal_diff_angle > 6.2){
-		goal_diff_angle -= 6.2;
-	}
+	double robot_yaw = yaw;
 	if(intersection){
 	  yaw = target_orientation;
 	}
 	
-	const double angle_step = 10.0;	//[deg]
+	const double angle_step = 5.0;	//[deg]
 	const double angle_range = 45.0;	//[deg]
 	double search_range = local_map.info.width*local_map.info.resolution*0.5;
-	if(search_range>local_map.info.height*local_map.info.resolution)	search_range = local_map.info.height*local_map.info.resolution;
+	if(search_range>local_map.info.height*local_map.info.resolution){
+		search_range = local_map.info.height*local_map.info.resolution;
+	}
 	search_range -= 1.0;
 	bool reached_end = false;
 
@@ -90,9 +107,7 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 	for(double step=0.0;step<=angle_range;step+=angle_step){
 		double path_length = 0.0;
 		double theta = yaw + step/180.0*M_PI;
-		if(theta>M_PI)	theta -= 2.0*M_PI;
-		if(theta<M_PI)	theta += 2.0*M_PI;
-		
+		theta = normalize(theta);	
 		reached_end = radial_search(path_length, theta, search_range);
 		if(longest_path_length<path_length){
 			longest_path_length = path_length;
@@ -103,6 +118,7 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 		if(step!=0.0 && step!=180.0){
 			path_length = 0.0;
 			theta = yaw - step/180.0*M_PI;
+			theta = normalize(theta);	
 			reached_end = radial_search(path_length, theta, search_range);
 			if(longest_path_length<path_length){
 				longest_path_length = path_length;
@@ -110,9 +126,13 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 			}
 		}
 		if(reached_end)	break;
+		if(step == -angle_range){
+			std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
+		}
 	}
 
-	if(goal_diff_angle < MARGIN_ANGLE){
+	double goal_diff_angle = fabs(angle_diff(robot_yaw,longest_path_length_angle));
+	if(intersection && goal_diff_angle < MARGIN_ANGLE){
 	  std::cout<< "end_trun" << std::endl;
 	  intersection = false;
 	}
@@ -121,7 +141,12 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 	goal.pose.position.y = longest_path_length*sin(longest_path_length_angle); 
 	goal.pose.position.z = 0.0;
 	goal.pose.orientation = tf::createQuaternionMsgFromYaw(longest_path_length_angle);
+	std::cout << "---------------------------------" << std::endl;
+	std::cout << "intersection:"<< intersection << std::endl;
 	std::cout << "goal diff angle:" << goal_diff_angle << std::endl;
+	std::cout << "yaw:" << yaw << std::endl;
+	std::cout << "longest_path_angle:" << longest_path_length_angle << std::endl;
+	std::cout << "longest_path_length:" << longest_path_length << std::endl;
 }
 
 void LocalGoalCreator()
@@ -138,7 +163,6 @@ void LocalGoalCreator()
   ros::Rate loop_rate(10);
   while(ros::ok()){
 	if(map_received && target_received){
-	  std::cout << "intersection:"<< intersection << std::endl;
 	  detection_main(local_goal);
 	  //std::cout << local_goal << std::endl;
 	  pub_goal.publish(local_goal);
