@@ -12,7 +12,7 @@
 
     <node pkg="infant_recognition" type="pc_transformer" name="pc_transformer" output="screen"/>
 	<node pkg="infant_recognition" type="pc_transformer" name="rmground_transformer">
-		<remap from="/velodyne_points" to="/rm_ground_2"/>
+		<remap from="/velodyne_points" to="/rm_ground2"/>
 		<remap from="/velodyne_points/transformed" to="/rm_ground2/transformed"/>
 	</node>
 
