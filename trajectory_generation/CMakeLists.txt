@@ -1,26 +1,23 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(infant_recognition)
-
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+project(trajectory_generation)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  # eigen
+  pcl_conversions
+  geometry_msgs
+  nav_msgs
   roscpp
   rospy
-  std_msgs
   tf
-  PCL REQUIRED
-  cv_bridge
-  image_transport
-  pcl_ros
+  visualization_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenCV REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -53,18 +50,24 @@ find_package(OpenCV REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  RoadProperty.msg
+  Velocity.msg
+  VelocityArray.msg
+  path_params.msg
+)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  GetGoals.srv
+  Kirikaesi.srv
+  MotionPlay.srv
+  PathCheck.srv
+  TableLookUP.srv
+  TrajectoryGeneration.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -74,10 +77,13 @@ find_package(OpenCV REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+  nav_msgs
+  visualization_msgs
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -109,9 +115,9 @@ find_package(OpenCV REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES tsukuba2018
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+ INCLUDE_DIRS include
+#  LIBRARIES trajectory_generation
+ CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy tf visualization_msgs
 #  DEPENDS system_lib
 )
 
@@ -121,42 +127,44 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+# include_directories(include)
 include_directories(
-# include
+	include
   ${catkin_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
 )
 
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/tsukuba2018.cpp
-# )
+# add_library(trajectory_generation src/${PROJECT_NAME}/trajectory_generation.cpp)
+add_library(trajectory_generation src/trajectory_generation.cpp)
+add_library(LocalPlanning_lib src/LocalPlanning_lib.cpp)
+add_library(boundary_state src/boundary_state.cpp)
+add_library(Visualize_lib src/Visualize_lib.cpp)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(trajectory_generation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-## With catkin_make all packages are built within a single CMake context
-## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/tsukuba2018_node.cpp)
-
-## Rename C++ executable without prefix
-## The above recommended prefix causes long target names, the following renames the
-## target back to the shorter version for ease of user use
-## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
+# add_executable(trajectory_generation_node src/trajectory_generation_node.cpp)
+# add_executable(LocalPlanning_lib src/LocalPlanning_lib.cpp)
+# add_executable(Visualize_lib src/Visualize_lib.cpp)
+# add_executable(boundary_state src/boundary_state.cpp)
+# add_executable(trajectory_generation src/trajectory_generation.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(trajectory_generation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(trajectory_generation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+# target_link_libraries(LocalPlanning_lib  ${catkin_LIBRARIES} )
+# target_link_libraries(Visualize_lib  ${catkin_LIBRARIES} )
+# target_link_libraries(boundary_state  ${catkin_LIBRARIES} )
+# target_link_libraries(trajectory_generation  ${catkin_LIBRARIES} )
 
 #############
 ## Install ##
@@ -173,18 +181,18 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
+# install(TARGETS trajectory_generation trajectory_generation_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -198,24 +206,10 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_tsukuba2018.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_trajectory_generation.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(occupancygrid_lidar src/occupancygrid_lidar.cpp)
-target_link_libraries(occupancygrid_lidar ${catkin_LIBRARIES})
-add_executable(occupancygrid_zed src/occupancygrid_zed.cpp)
-target_link_libraries(occupancygrid_zed ${catkin_LIBRARIES})
-add_executable(occupancygrid_store src/occupancygrid_store.cpp)
-target_link_libraries(occupancygrid_store ${catkin_LIBRARIES})
-add_executable(tf_broadcaster src/tf_broadcaster.cpp)
-target_link_libraries(tf_broadcaster ${catkin_LIBRARIES})
-add_executable(pc_transformer src/pc_transformer.cpp)
-target_link_libraries(pc_transformer ${catkin_LIBRARIES})
-add_executable(longest_path_detection src/longest_path_detection.cpp)
-target_link_libraries(longest_path_detection ${catkin_LIBRARIES})
-add_executable(grass2grid src/grass2grid.cpp)
-target_link_libraries(grass2grid ${catkin_LIBRARIES} ${OpenCV_LIBS})
