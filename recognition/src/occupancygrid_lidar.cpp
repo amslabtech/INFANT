@@ -232,7 +232,7 @@ void callback_cloud_rmground(const sensor_msgs::PointCloud2ConstPtr& msg)
 	
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
 	for(size_t i=0;i<cloud_obstacles->points.size();i++){
-		if(fabs(cloud->points[i].x)<w/2.0 && fabs(cloud->points[i].y)<h/2.0)	tmp_cloud_obstacles->points.push_back(cloud_obstacles->points[i]);
+		if(fabs(cloud_obstacles->points[i].x)<w/2.0 && fabs(cloud_obstacles->points[i].y)<h/2.0)	tmp_cloud_obstacles->points.push_back(cloud_obstacles->points[i]);
 	}
 	cloud_obstacles = tmp_cloud_obstacles;
 }
