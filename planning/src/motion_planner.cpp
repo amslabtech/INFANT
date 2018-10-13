@@ -192,7 +192,7 @@ void MotionPlanner()
 	while(ros::ok()){
 		//get robot position
 		//bool tf_flag = checkTF(transform, robot_yaw, listener);
-		if (!cheat_flag){ //normal state
+		if (!cheat_flag && target_flag && odom_flag){ //normal state
 			trajectory_generation::VelocityArray v_array; 
 			if (mode != 1){
 				if (v_a_flag){
@@ -219,7 +219,7 @@ void MotionPlanner()
 				cout<<"stop"<<endl;
 				setStopCommand(cmd_vel);
 			}
-			else if (intersection && fabs(angle_diff(target,robot_yaw))>0.1){
+			else if ((intersection && fabs(angle_diff(target,robot_yaw))>0.1) || turn_flag){
 				cout<<"turn"<<endl;
 				setTurnCommand(cmd_vel, target, robot_yaw);
 				stop_count=0;
