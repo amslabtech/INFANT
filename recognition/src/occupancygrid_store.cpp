@@ -190,7 +190,7 @@ void grid_update_zed(void)
 
 void initialize_around_startpoint(void)
 {
-	const double initialize_range_meter = 2.0;	//[m]
+	const double initialize_range_meter = 5.0;	//[m]
 	int range = initialize_range_meter/grid_store.info.resolution;
 	for(int i=-range;i<=range;i++){
 		for(int j=-range;j<=range;j++){

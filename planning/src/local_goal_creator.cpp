@@ -1,13 +1,15 @@
 #include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
 #include <tf/transform_listener.h>
 #include <std_msgs/Bool.h>
 
 #include <iostream>
 
 nav_msgs::OccupancyGrid local_map;
+nav_msgs::Odometry odom;
 bool map_received = false;
 bool intersection = false;
 bool target_received = false;
@@ -34,10 +36,15 @@ float angle_diff(float a, float b)
     return(d2);
 }
 
-void TargetCallback(const std_msgs::Float32ConstPtr& msg)
+void TargetCallback(const std_msgs::Float64ConstPtr& msg)
 {
   target_orientation = msg->data;
   target_received = true;
+}
+
+void lclCallback(const nav_msgs::OdometryConstPtr& msg)
+{
+  odom = *msg;
 }
 
 void IntersectionCallback(const std_msgs::BoolConstPtr& msg)
@@ -72,7 +79,7 @@ bool radial_search(double& path_length, double theta, double search_range)
 		}
 		x = path_length*cos(theta);
 		y = path_length*sin(theta);
-		if(local_map.data[meterpoint_to_index(local_map, x, y)]>50 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
+		if(local_map.data[meterpoint_to_index(local_map, x, y)]>0 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
 	}
 }
 void detection_main(geometry_msgs::PoseStamped& goal)
@@ -89,10 +96,10 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 
 	double roll, pitch, yaw;
 	tf::Matrix3x3(transform.getRotation()).getRPY(roll, pitch, yaw);
-	double robot_yaw = yaw;
-	if(intersection){
-	  yaw = target_orientation;
-	}
+	//double robot_yaw = yaw;
+	//if(intersection){
+	//  yaw = target_orientation;
+	//}
 	
 	const double angle_step = 5.0;	//[deg]
 	const double angle_range = 45.0;	//[deg]
@@ -131,11 +138,11 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 		}
 	}
 
-	double goal_diff_angle = fabs(angle_diff(robot_yaw,longest_path_length_angle));
-	if(intersection && goal_diff_angle < MARGIN_ANGLE){
-	  std::cout<< "end_trun" << std::endl;
-	  intersection = false;
-	}
+	//double goal_diff_angle = fabs(angle_diff(robot_yaw,longest_path_length_angle));
+	//if(intersection && goal_diff_angle < MARGIN_ANGLE){
+	//  std::cout<< "end_trun" << std::endl;
+	//  intersection = false;
+	//}
 	goal.header = local_map.header;
 	goal.pose.position.x = longest_path_length*cos(longest_path_length_angle); 
 	goal.pose.position.y = longest_path_length*sin(longest_path_length_angle); 
@@ -143,7 +150,7 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 	goal.pose.orientation = tf::createQuaternionMsgFromYaw(longest_path_length_angle);
 	std::cout << "---------------------------------" << std::endl;
 	std::cout << "intersection:"<< intersection << std::endl;
-	std::cout << "goal diff angle:" << goal_diff_angle << std::endl;
+	//std::cout << "goal diff angle:" << goal_diff_angle << std::endl;
 	std::cout << "yaw:" << yaw << std::endl;
 	std::cout << "longest_path_angle:" << longest_path_length_angle << std::endl;
 	std::cout << "longest_path_length:" << longest_path_length << std::endl;
@@ -154,7 +161,8 @@ void LocalGoalCreator()
   ros::NodeHandle nh;
   ros::Subscriber sub_map = nh.subscribe("/local_map", 1, MapCallback);
   ros::Subscriber sub_flag = nh.subscribe("/intersection_flag", 1, IntersectionCallback);
-  ros::Subscriber sub_target = nh.subscribe("/target", 1, TargetCallback);
+  ros::Subscriber sub_target = nh.subscribe("/target_yaw", 1, TargetCallback);
+  ros::Subscriber sub_lcl = nh.subscribe("/lcl", 1, lclCallback);
   
   ros::Publisher pub_goal = nh.advertise<geometry_msgs::PoseStamped>("/local_goal",1);
 
@@ -162,7 +170,7 @@ void LocalGoalCreator()
 
   ros::Rate loop_rate(10);
   while(ros::ok()){
-	if(map_received && target_received){
+	if(map_received){// && target_received){
 	  detection_main(local_goal);
 	  //std::cout << local_goal << std::endl;
 	  pub_goal.publish(local_goal);

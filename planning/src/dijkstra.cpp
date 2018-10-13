@@ -98,8 +98,9 @@ void GlobalPathCreator()
     FILE *fp1;
     FILE *fp2;
     // fp1=fopen("./tsukuba.csv","r"); //tsukuba
-    fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/ikuta.csv","r"); //ikuta
-    fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra.path","r");
+    //fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/ikuta.csv","r"); //ikuta
+    fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/xy_new.csv","r"); //ikuta
+    fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_new.path","r");
     char VorE[300][10];
     float NE_posi[300][4];
     float Dijkstra[300][3];
