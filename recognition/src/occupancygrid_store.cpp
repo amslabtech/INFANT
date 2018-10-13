@@ -18,6 +18,7 @@ bool first_callback_grid = true;
 double theta = 0.0;
 double delta_x = 0.0;
 double delta_y = 0.0;
+bool robot_started_running = false;
 
 bool cell_is_inside_meter(nav_msgs::OccupancyGrid grid, double x, double y)
 {
@@ -159,6 +160,17 @@ void move_cells(double dt)
 	}
 }
 
+void initialize_around_startpoint(void)
+{
+	const double initialize_range_meter = 5.0;	//[m]
+	int range = initialize_range_meter/grid_store.info.resolution;
+	for(int i=-range;i<=range;i++){
+		for(int j=-range;j<=range;j++){
+			grid_store.data[point_to_index(grid_store, i, j)] = 0;
+		}
+	}
+}
+
 void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 {
 	// std::cout << "- CALLBACK ODOM -" << std::endl;
@@ -167,7 +179,11 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	double dt = (time_odom_now - time_odom_last).toSec();
 	time_odom_last = time_odom_now;
 
-	if(!first_callback_odom && !grid_store.data.empty())	move_cells(dt);
+	if(!robot_started_running){
+		if(odom.twist.twist.linear.x>0.5)	robot_started_running = true;
+	}
+
+	else if(!first_callback_odom && !grid_store.data.empty())	move_cells(dt);
 
 	first_callback_odom = false;
 }
@@ -188,17 +204,6 @@ void grid_update_zed(void)
 	}
 }
 
-void initialize_around_startpoint(void)
-{
-	const double initialize_range_meter = 5.0;	//[m]
-	int range = initialize_range_meter/grid_store.info.resolution;
-	for(int i=-range;i<=range;i++){
-		for(int j=-range;j<=range;j++){
-			grid_store.data[point_to_index(grid_store, i, j)] = 0;
-		}
-	}
-}
-
 void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 {
 	// std::cout << "- CALLBACK GRID -" << std::endl;
@@ -210,7 +215,7 @@ void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 	grid_update_lidar();
 	ambiguity_filter(grid_store);
 
-	if(first_callback_grid)	initialize_around_startpoint();
+	if(first_callback_grid || !robot_started_running)	initialize_around_startpoint();
 	first_callback_grid = false;
 }
 
