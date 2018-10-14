@@ -35,6 +35,7 @@ int re_route_cnt=0;
 int pre_start;
 int pre_goal;
 bool first_edge_flag=true;
+int get_flag = 0;
 
 void EdgeCallback(const std_msgs::Int16MultiArrayConstPtr& msg)
 {
@@ -56,7 +57,11 @@ void IntersectionCallback(const std_msgs::BoolConstPtr& msg)
 {
     insec=*msg;
     if(insec.data){
+		get_flag += 1;
+	}
+	if(!insec.data && get_flag >0){
         insec_flag=true;
+		get_flag = 0;
     }
 }
 
@@ -99,7 +104,8 @@ void GlobalPathCreator()
     FILE *fp2;
     // fp1=fopen("./tsukuba.csv","r"); //tsukuba
     //fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/ikuta.csv","r"); //ikuta
-    fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/xy_new.csv","r"); //ikuta
+    fp1=fopen("/home/amsl/ros_catkin_ws/src/mapping/latlng2xy/xy/xy_new.csv","r"); //ikuta
+    //fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/xy_new.csv","r"); //ikuta
     fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_new.path","r");
     char VorE[300][10];
     float NE_posi[300][4];
