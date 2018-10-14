@@ -41,12 +41,16 @@ void tf_broadcaster_odom(void)
 	geometry_msgs::TransformStamped transform;
 	// transform.header.stamp = ros::Time::now();
 	transform.header.stamp = odom.header.stamp;
-	transform.header.frame_id = "/odom";
-	transform.child_frame_id = "/velodyne";
-	transform.transform.translation.x = odom.pose.pose.position.x;
-	transform.transform.translation.y = odom.pose.pose.position.y;
-	transform.transform.translation.z = odom.pose.pose.position.z;	
-	transform.transform.rotation = odom.pose.pose.orientation;
+	transform.header.frame_id = "/velodyne";
+	transform.child_frame_id = "/odom";
+	transform.transform.translation.x = -odom.pose.pose.position.x;
+	transform.transform.translation.y = -odom.pose.pose.position.y;
+	transform.transform.translation.z = -odom.pose.pose.position.z;
+	tf::Quaternion q;
+	quaternionMsgToTF(odom.pose.pose.orientation, q);
+	q.inverse();
+	// transform.transform.rotation = odom.pose.pose.orientation;
+	quaternionTFToMsg(q, transform.transform.rotation);
 	broadcaster.sendTransform(transform);
 }
 
@@ -96,7 +100,7 @@ void tf_broadcaster_baselink(void)
 	// transform.header.stamp = ros::Time::now();
 	transform.header.stamp = odom.header.stamp;
 	transform.header.frame_id = "/matching_base_link";
-	transform.child_frame_id = "/odom";
+	transform.child_frame_id = "/velodyne";
 	transform.transform.translation.x = 0.0;
 	transform.transform.translation.y = 0.0;
 	transform.transform.translation.z = 0.0;
