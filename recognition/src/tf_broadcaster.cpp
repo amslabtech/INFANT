@@ -88,6 +88,25 @@ void tf_broadcaster_zed(void)
 	broadcaster.sendTransform(transform);
 }
 
+void tf_broadcaster_baselink(void)
+{
+	// std::cout << "TF BROADCASTER BASELINK" << std::endl;
+	static tf::TransformBroadcaster broadcaster;
+	geometry_msgs::TransformStamped transform;
+	// transform.header.stamp = ros::Time::now();
+	transform.header.stamp = odom.header.stamp;
+	transform.header.frame_id = "/matching_base_link";
+	transform.child_frame_id = "/odom";
+	transform.transform.translation.x = 0.0;
+	transform.transform.translation.y = 0.0;
+	transform.transform.translation.z = 0.0;
+	transform.transform.rotation.x = 0.0;
+	transform.transform.rotation.y = 0.0;
+	transform.transform.rotation.z = 0.0;
+	transform.transform.rotation.w = 1.0;
+	broadcaster.sendTransform(transform);
+}
+
 void initialize_odom(nav_msgs::Odometry& odom)
 {
 	odom.header.frame_id = "/odom";
@@ -119,6 +138,7 @@ int main(int argc, char** argv)
 			tf_broadcaster_odom();
 			tf_broadcaster_localmap();
 			tf_broadcaster_zed();
+			tf_broadcaster_baselink();
 		}
 		loop_rate.sleep();
 	}
