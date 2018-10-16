@@ -34,29 +34,23 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	first_callback_odom = false;
 }
 
-void tf_broadcaster_odom(void)
+void tf_broadcaster1(void)
 {
-	// std::cout << "TF BROADCASTER ODOM" << std::endl;
 	static tf::TransformBroadcaster broadcaster;
 	geometry_msgs::TransformStamped transform;
 	// transform.header.stamp = ros::Time::now();
 	transform.header.stamp = odom.header.stamp;
-	transform.header.frame_id = "/velodyne";
-	transform.child_frame_id = "/odom";
-	transform.transform.translation.x = -odom.pose.pose.position.x;
-	transform.transform.translation.y = -odom.pose.pose.position.y;
-	transform.transform.translation.z = -odom.pose.pose.position.z;
-	tf::Quaternion q;
-	quaternionMsgToTF(odom.pose.pose.orientation, q);
-	q.inverse();
-	// transform.transform.rotation = odom.pose.pose.orientation;
-	quaternionTFToMsg(q, transform.transform.rotation);
+	transform.header.frame_id = "/odom";
+	transform.child_frame_id = "/velodyne_odom";
+	transform.transform.translation.x = odom.pose.pose.position.x;
+	transform.transform.translation.y = odom.pose.pose.position.y;
+	transform.transform.translation.z = odom.pose.pose.position.z;
+	transform.transform.rotation = odom.pose.pose.orientation;
 	broadcaster.sendTransform(transform);
 }
 
-void tf_broadcaster_localmap(void)
+void tf_broadcaster2(void)
 {
-	// std::cout << "TF BROADCASTER LOCALMAP" << std::endl;
 	static tf::TransformBroadcaster broadcaster;
 	geometry_msgs::TransformStamped transform;
 	// transform.header.stamp = ros::Time::now();
@@ -73,14 +67,13 @@ void tf_broadcaster_localmap(void)
 	broadcaster.sendTransform(transform);
 }
 
-void tf_broadcaster_zed(void)
+void tf_broadcaster3(void)
 {
-	// std::cout << "TF BROADCASTER LOCALMAP" << std::endl;
 	static tf::TransformBroadcaster broadcaster;
 	geometry_msgs::TransformStamped transform;
 	// transform.header.stamp = ros::Time::now();
 	transform.header.stamp = odom.header.stamp;
-	transform.header.frame_id = "/velodyne";
+	transform.header.frame_id = "/velodyne_odom";
 	transform.child_frame_id = "/zed";
 	transform.transform.translation.x = 0.35;
 	transform.transform.translation.y = 0.0;
@@ -92,29 +85,10 @@ void tf_broadcaster_zed(void)
 	broadcaster.sendTransform(transform);
 }
 
-void tf_broadcaster_baselink(void)
-{
-	// std::cout << "TF BROADCASTER BASELINK" << std::endl;
-	static tf::TransformBroadcaster broadcaster;
-	geometry_msgs::TransformStamped transform;
-	// transform.header.stamp = ros::Time::now();
-	transform.header.stamp = odom.header.stamp;
-	transform.header.frame_id = "/matching_base_link";
-	transform.child_frame_id = "/velodyne";
-	transform.transform.translation.x = 0.0;
-	transform.transform.translation.y = 0.0;
-	transform.transform.translation.z = 0.0;
-	transform.transform.rotation.x = 0.0;
-	transform.transform.rotation.y = 0.0;
-	transform.transform.rotation.z = 0.0;
-	transform.transform.rotation.w = 1.0;
-	broadcaster.sendTransform(transform);
-}
-
 void initialize_odom(nav_msgs::Odometry& odom)
 {
 	odom.header.frame_id = "/odom";
-	odom.child_frame_id = "/velodyne";
+	odom.child_frame_id = "/velodyne_odom";
 	odom.pose.pose.position.x = 0.0;
 	odom.pose.pose.position.y = 0.0;
 	odom.pose.pose.position.z = 0.0;
@@ -139,10 +113,9 @@ int main(int argc, char** argv)
 	while(ros::ok()){
 		ros::spinOnce();
 		if(!first_callback_odom){
-			tf_broadcaster_odom();
-			tf_broadcaster_localmap();
-			tf_broadcaster_zed();
-			tf_broadcaster_baselink();
+			tf_broadcaster1;
+			tf_broadcaster2;
+			tf_broadcaster3;
 		}
 		loop_rate.sleep();
 	}

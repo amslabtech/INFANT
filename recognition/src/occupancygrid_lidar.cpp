@@ -258,18 +258,18 @@ void grid_initialization(void)
 
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "occupancygrid_lidar");
+
 	ros::NodeHandle nh;
 
 	/*sub*/
-	ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points/transformed", 1, callback_cloud);
-	ros::Subscriber sub_cloud_rmground = nh.subscribe("/rm_ground2/transformed", 1, callback_cloud_rmground);
+	ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points/renamed_frame/transformed", 1, callback_cloud);
+	ros::Subscriber sub_cloud_rmground = nh.subscribe("/rm_ground2/renamed_frame/transformed", 1, callback_cloud_rmground);
 	// ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points", 1, callback_cloud);
 	
 	/*pub*/
 	ros::Publisher pub_grid = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar",1);
-	ros::Publisher pub_cloud_obstacles = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points/obstacles",1);
-	ros::Publisher pub_cloud_ground = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points/ground",1);
+	ros::Publisher pub_cloud_obstacles = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points/renamed_frame/obstacles",1);
+	ros::Publisher pub_cloud_ground = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points/renamed_frame/ground",1);
 	
 	/*variables*/
 	

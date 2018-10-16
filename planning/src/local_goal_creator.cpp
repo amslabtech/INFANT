@@ -101,8 +101,8 @@ void detection_main(geometry_msgs::PoseStamped& goal)
     tf::TransformListener listener;
 	tf::StampedTransform transform;
 	try{
-		listener.waitForTransform(local_map.header.frame_id, "/velodyne", local_map.header.stamp, ros::Duration(1.0));
-		listener.lookupTransform(local_map.header.frame_id, "/velodyne", local_map.header.stamp, transform);
+		listener.waitForTransform(local_map.header.frame_id, "/velodyne_odom", local_map.header.stamp, ros::Duration(1.0));
+		listener.lookupTransform(local_map.header.frame_id, "/velodyne_odom", local_map.header.stamp, transform);
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
