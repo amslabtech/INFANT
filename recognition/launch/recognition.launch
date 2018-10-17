@@ -4,23 +4,23 @@
 	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_velodyne">
 		<remap from="/cloud" to="/velodyne_points"/>
 		<remap from="/cloud/renamed_frame" to="/velodyne_points/renamed_frame"/>
-		<remap from="/new_id" to="/velodyne_odom"/>
+		<param name="new_id" type="string" value="/velodyne_odom"/>
 	</node>
 	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_rmground2">
 		<remap from="/cloud" to="/rm_ground2"/>
 		<remap from="/cloud/renamed_frame" to="/rm_ground2/renamed_frame"/>
-		<remap from="/new_id" to="/velodyne_odom"/>
+		<param name="new_id" type="string" value="/velodyne_odom"/>
 	</node>
 	
 	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_velodyne">
 		<remap from="/cloud" to="/velodyne_points/renamed_frame"/>
 		<remap from="/cloud/transformed" to="/velodyne_points/renamed_frame/transformed"/>
-		<remap from="/target" to="/localmap"/>
+		<param name="target" type="string" value="/localmap"/>
 	</node>
 	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_rmground2">
 		<remap from="/cloud" to="/rm_ground2/renamed_frame"/>
 		<remap from="/cloud/transformed" to="/rm_ground2/renamed_frame/transformed"/>
-		<remap from="/target" to="/localmap"/>
+		<param name="target" type="string" value="/localmap"/>
 	</node>
 
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>

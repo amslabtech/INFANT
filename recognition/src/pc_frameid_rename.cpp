@@ -4,8 +4,10 @@
 class PointCloudTransform{
 	private:
 		ros::NodeHandle nh;
+		ros::NodeHandle nhPrivate;
 		ros::Subscriber sub;
 		ros::Publisher pub;
+		std::string new_id;
 
 	public:
 		PointCloudTransform();
@@ -13,15 +15,17 @@ class PointCloudTransform{
 };
 
 PointCloudTransform::PointCloudTransform()
+	: nhPrivate("~")
 {
 	sub = nh.subscribe("/cloud", 1, &PointCloudTransform::Callback, this);
 	pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud/renamed_frame", 1);
+	nhPrivate.getParam("new_id", new_id);
 }
 
 void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
 	sensor_msgs::PointCloud2 pc = *msg;
-	pc.header.frame_id = "/new_id";
+	pc.header.frame_id = new_id;
 	pub.publish(pc);
 }
 

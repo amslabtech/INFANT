@@ -10,6 +10,8 @@ class PointCloudTransform{
 		ros::Subscriber sub;
 		ros::Publisher pub;
 		sensor_msgs::PointCloud pc_;
+		ros::NodeHandle nhPrivate;
+		std::string target;
 
 	public:
 		PointCloudTransform();
@@ -17,9 +19,11 @@ class PointCloudTransform{
 };
 
 PointCloudTransform::PointCloudTransform()
+    : nhPrivate("~")
 {
 	sub = nh.subscribe("/cloud", 1, &PointCloudTransform::Callback, this);
 	pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud/transformed", 1);
+	nhPrivate.getParam("target", target);
 }
 
 void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
@@ -30,8 +34,8 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 	sensor_msgs::convertPointCloud2ToPointCloud(*msg, pc_in);
 
 	try{
-		tflistener.waitForTransform("/target", msg->header.frame_id, msg->header.stamp, ros::Duration(1.0));
-		tflistener.transformPointCloud("/target", msg->header.stamp, pc_in, msg->header.frame_id, pc_trans);
+		tflistener.waitForTransform(target, msg->header.frame_id, msg->header.stamp, ros::Duration(1.0));
+		tflistener.transformPointCloud(target, msg->header.stamp, pc_in, msg->header.frame_id, pc_trans);
 		sensor_msgs::convertPointCloudToPointCloud2(pc_trans, pc2_out);
 		pub.publish(pc2_out);
 	}
