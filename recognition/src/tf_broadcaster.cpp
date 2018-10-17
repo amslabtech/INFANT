@@ -11,7 +11,7 @@ double theta = 0.0;
 
 void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 {
-	// std::cout << "CALLBACK ODOM" << std::endl;
+	std::cout << "CALLBACK ODOM" << std::endl;
 	// odom = *msg;
 	
 	time_now_odom = ros::Time::now();
@@ -36,6 +36,8 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 
 void tf_broadcaster1(void)
 {
+	std::cout << "TF1" << std::endl;
+	
 	static tf::TransformBroadcaster broadcaster;
 	geometry_msgs::TransformStamped transform;
 	// transform.header.stamp = ros::Time::now();
@@ -113,9 +115,9 @@ int main(int argc, char** argv)
 	while(ros::ok()){
 		ros::spinOnce();
 		if(!first_callback_odom){
-			tf_broadcaster1;
-			tf_broadcaster2;
-			tf_broadcaster3;
+			tf_broadcaster1();
+			tf_broadcaster2();
+			tf_broadcaster3();
 		}
 		loop_rate.sleep();
 	}

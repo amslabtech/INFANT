@@ -1,13 +1,28 @@
 <launch>
     <node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
 
-    <node pkg="infant_recognition" type="pc_transformer" name="pc_transformer" output="screen"/>
-	<node pkg="infant_recognition" type="pc_transformer" name="rmground_transformer">
-		<remap from="/velodyne_points" to="/rm_ground2"/>
-		<remap from="/velodyne_points/transformed" to="/rm_ground2/transformed"/>
+	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_velodyne">
+		<remap from="/cloud" to="/velodyne_points"/>
+		<remap from="/cloud/renamed_frame" to="/velodyne_points/renamed_frame"/>
+		<remap from="/new_id" to="/velodyne_odom"/>
+	</node>
+	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_rmground2">
+		<remap from="/cloud" to="/rm_ground2"/>
+		<remap from="/cloud/renamed_frame" to="/rm_ground2/renamed_frame"/>
+		<remap from="/new_id" to="/velodyne_odom"/>
+	</node>
+	
+	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_velodyne">
+		<remap from="/cloud" to="/velodyne_points/renamed_frame"/>
+		<remap from="/cloud/transformed" to="/velodyne_points/renamed_frame/transformed"/>
+		<remap from="/target" to="/localmap"/>
+	</node>
+	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_rmground2">
+		<remap from="/cloud" to="/rm_ground2/renamed_frame"/>
+		<remap from="/cloud/transformed" to="/rm_ground2/renamed_frame/transformed"/>
+		<remap from="/target" to="/localmap"/>
 	</node>
 
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
     <node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
-
 </launch>

@@ -21,7 +21,7 @@ PointCloudTransform::PointCloudTransform()
 void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
 	sensor_msgs::PointCloud2 pc = *msg;
-	pc.header.frame_id = "new_id";
+	pc.header.frame_id = "/new_id";
 	pub.publish(pc);
 }
 
