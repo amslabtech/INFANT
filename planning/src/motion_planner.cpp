@@ -22,7 +22,8 @@
 using namespace std;
 
 const string header_frame("/localmap");
-const string robot_frame("/velodyne");
+const string robot_frame("/velodyne_odom");
+//const string robot_frame("/velodyne");
 const float Vmax=0.9;
 const float ANGULARmax=1.0; 
 const float ANGULARmin=0.1;
@@ -81,7 +82,7 @@ void setTurnCommand(infant_planning::Velocity& cmd_vel,
 {
 	float turn_angular = 0.3;
 	float turn_dir = 1;
-	if(angle_diff(target, robo)<0) turn_dir=-1;
+	if(angle_diff(target, robo)>0) turn_dir=-1;
 	cmd_vel.op_linear = 0;
 	cmd_vel.op_angular = turn_dir * turn_angular;
 	cout<<"now turn"<<endl;
@@ -203,14 +204,15 @@ void MotionPlanner()
 					cout<<"run"<<endl;
 				}
 				else { // path is not generated
-					if (stop_count>MaxStop){
-						turn_flag=true;
-						cout<<"stop_count_turn"<<endl;
-					}
-					else{
+					//if (stop_count>MaxStop){
+					//	turn_flag=true;
+					//	cout<<"stop_count_turn"<<endl;
+					//}
+					//else{
 						cout<<"no path stop"<<endl;
-					}
+					//}
 					stop_count++;
+					cout<< "stop_count" << stop_count <<endl;
 				}
 			}
 		
@@ -219,11 +221,19 @@ void MotionPlanner()
 				cout<<"stop"<<endl;
 				setStopCommand(cmd_vel);
 			}
-			else if ((intersection && fabs(angle_diff(target,robot_yaw))>0.1) || turn_flag){
-				cout<<"turn"<<endl;
-				setTurnCommand(cmd_vel, target, robot_yaw);
-				stop_count=0;
-				turn_flag = false;
+			else if (intersection || turn_flag){
+				if(fabs(angle_diff(target,robot_yaw))<0.1){
+					cout<<"turn"<<endl;
+					setTurnCommand(cmd_vel, target, robot_yaw);
+					stop_count=0;
+					turn_flag = false;
+				}else{
+					cout<<"turn end"<<endl;
+					intersection = false;
+					commandDecision(v_array, cmd_vel);
+					stop_count=0;
+					time_count=0;
+				}
 			}
 			else if (mode == 0){ 
 				cout<<"normal"<<endl;
@@ -232,13 +242,9 @@ void MotionPlanner()
 				time_count=0;
 			}
 			else {
-				if(fabs(angle_diff(target,robot_yaw))<=0.1){
-					intersection = false;
-				}
-				//cout<<"unknown"<<endl;
-				cout<<"turn end"<<endl;
-				//setStopCommand(cmd_vel);
-				commandDecision(v_array, cmd_vel);
+				cout<<"unknown"<<endl;
+				setStopCommand(cmd_vel);
+				//commandDecision(v_array, cmd_vel);
 				stop_count=0;
 				time_count=0;
 			}
@@ -257,6 +263,7 @@ void MotionPlanner()
 			//v_a_flag=false;
 			//t_wp_flag=false;
 			//tf_flag=false;
+			turn_flag=false;
 		}
 		else if (cheat_flag){
 			vel_pub.publish(cheat_vel);

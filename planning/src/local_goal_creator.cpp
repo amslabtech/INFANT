@@ -55,7 +55,7 @@ void TargetCallback(const std_msgs::Float64ConstPtr& msg)
 void lclCallback(const nav_msgs::OdometryConstPtr& msg)
 {
   nav_msgs::Odometry odom = *msg;
-  robot_orientation = get_yaw(odom.pose.pose.orientation);
+  robot_orientation = odom.pose.pose.orientation.z;//get_yaw(odom.pose.pose.orientation);
   odom_received = true;
 }
 

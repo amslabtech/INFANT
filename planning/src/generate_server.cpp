@@ -27,7 +27,8 @@ const float MaxAngle = 1.2;
 //const string header_frame("/map");
 //const string header_frame2("/matching_base_link");
 const string header_frame("/localmap");
-const string header_frame2("/velodyne");
+const string header_frame2("/velodyne_odom");
+//const string header_frame2("/velodyne");
 using namespace std;
 
 //-----------Pathの構造体-----------//
