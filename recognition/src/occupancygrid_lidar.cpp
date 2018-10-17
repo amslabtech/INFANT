@@ -258,7 +258,7 @@ void grid_initialization(void)
 
 int main(int argc, char** argv)
 {
-
+	ros::init(argc, argv, "occupancygrid_lidar");
 	ros::NodeHandle nh;
 
 	/*sub*/
