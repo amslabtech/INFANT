@@ -3,7 +3,8 @@
     
 	<!-- <node pkg="rosbag" type="play" name="player" args="- -clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -s 250"/> -->
     <!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;10&#45;01&#45;21&#45;47&#45;44.bag &#45;s 0"/> -->
-	<node pkg="rosbag" type="play" name="player" args="--clock /media/amsl/D8A80472A8045184/bagfiles/2018-10-13-13-23-54.bag -s 0"/>
+	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /media/amsl/D8A80472A8045184/bagfiles/2018&#45;10&#45;13&#45;13&#45;23&#45;54.bag &#45;s 0"/> -->
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/bagfiles/2018-10-17-20-39-47.bag -s 0"/>
 
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find infant_recognition)/../config/tsukuba2018.rviz"/>
     
@@ -11,9 +12,14 @@
     
     <node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
 
-	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_velodyne">
-		<remap from="/cloud" to="/velodyne_points"/>
-		<remap from="/cloud/renamed_frame" to="/velodyne_points/renamed_frame"/>
+	<!-- <node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_velodyne"> -->
+	<!-- 	<remap from="/cloud" to="/velodyne_points"/> -->
+	<!-- 	<remap from="/cloud/renamed_frame" to="/velodyne_points/renamed_frame"/> -->
+	<!-- 	<param name="new_id" type="string" value="velodyne_odom"/> -->
+	<!-- </node> -->
+	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_ground2">
+		<remap from="/cloud" to="/ground2"/>
+		<remap from="/cloud/renamed_frame" to="/ground2/renamed_frame"/>
 		<param name="new_id" type="string" value="velodyne_odom"/>
 	</node>
 	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_rmground2">
@@ -22,9 +28,14 @@
 		<param name="new_id" type="string" value="velodyne_odom"/>
 	</node>
 	
-	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_velodyne">
-		<remap from="/cloud" to="/velodyne_points/renamed_frame"/>
-		<remap from="/cloud/transformed" to="/velodyne_points/renamed_frame/transformed"/>
+	<!-- <node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_velodyne"> -->
+	<!-- 	<remap from="/cloud" to="/velodyne_points/renamed_frame"/> -->
+	<!-- 	<remap from="/cloud/transformed" to="/velodyne_points/renamed_frame/transformed"/> -->
+	<!-- 	<param name="target" type="string" value="localmap"/> -->
+	<!-- </node> -->
+	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_ground2">
+		<remap from="/cloud" to="/ground2/renamed_frame"/>
+		<remap from="/cloud/transformed" to="/ground2/renamed_frame/transformed"/>
 		<param name="target" type="string" value="localmap"/>
 	</node>
 	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_rmground2">
