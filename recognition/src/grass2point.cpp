@@ -14,11 +14,11 @@
 
 sensor_msgs::Image seg_img;
 sensor_msgs::Image depth_img;
-nav_msgs::OccupancyGrid map;
 pcl::PointCloud<pcl::PointXYZ> p;
 pcl::PointCloud<pcl::PointXYZ>::Ptr p_g (new pcl::PointCloud<pcl::PointXYZ>);
 pcl::PointCloud<pcl::PointXYZ>::Ptr p_r (new pcl::PointCloud<pcl::PointXYZ>);
 
+float cam_hight = 0.9;
 const int pixel_num_x = 513;
 const int pixel_num_y = 288;
 bool seg_flag = false;
@@ -90,8 +90,6 @@ void depth_callback(const sensor_msgs::ImageConstPtr& msg)
 {
     depth_img = *msg;
 
-    map.header = depth_img.header;
-
     image_d = cv_bridge::toCvCopy(depth_img, sensor_msgs::image_encodings::TYPE_32FC1)->image;
     resize(image_d,image_d,cv::Size(),pixel_num_x/320.,pixel_num_y/180.);
 
@@ -123,7 +121,7 @@ void store_angle(float angle_x,float angle_y)
 {
     float dx = angle_x/pixel_num_x;
     float dy = angle_y/pixel_num_y;
-	float modify_angle_y = 10;
+	float modify_angle_y = -16;//cam angle = -16[deg]
     float init_x = angle_x/2;
     float init_y = angle_y/2;
     for(int x=0;x<pixel_num_x;x++){
@@ -136,74 +134,57 @@ void store_angle(float angle_x,float angle_y)
     //printf("rad[287][512] = (%.2f, %.2f)\n",pixel[287][512].rad_x,pixel[287][512].rad_y);
 }
 
-void init_grid(void)
+float ground_theta(float x,float y,float z)
 {
-    for(int y=0;y<map.info.height;y++){
-        for(int x=0;x<map.info.width;x++){
-            grid[y][x] = -1;
-        }
-    }
-}
-
-void store_mapdata(void)
-{
-    int count = 0;
-    for(int x=map.info.width-1;x>=0;x--){
-        for(int y=map.info.height-1;y>=0;y--){
-            //printf("%d\n",y*w+x);
-            map.data[count] = grid[y][x];
-            count++;
-        }
-    }
+    float theta = atan((z+cam_hight)/sqrt(x*x+y+y));
+    theta *= 180/M_PI;
+        return theta;
 }
 
 void calc_object(void)
 {
-    
-    for(int y=pixel_num_y/2;y<pixel_num_y;y++){
+    for(int y=pixel_num_y*1/4;y<pixel_num_y;y++){
         for(int x=0;x<pixel_num_x;x++){
-            if(!std::isnan(pixel[y][x].depth) && pixel[y][x].depth <= 15.0){
-                int ob_x = (pixel[y][x].depth*cos(pixel[y][x].rad_y)*sin(pixel[y][x].rad_x) / map.info.resolution);
-                int ob_y = (pixel[y][x].depth*cos(pixel[y][x].rad_y)*cos(pixel[y][x].rad_x) / map.info.resolution);
+            if(!std::isnan(pixel[y][x].depth) && pixel[y][x].depth <= 20.0){
+                float ob_x = (pixel[y][x].depth*cos(pixel[y][x].rad_y)*sin(pixel[y][x].rad_x) );
+                float ob_y = (pixel[y][x].depth*cos(pixel[y][x].rad_y)*cos(pixel[y][x].rad_x) );
                 float ob_z = -(pixel[y][x].depth*sin(pixel[y][x].rad_y) );
-
-                if(ob_y<=map.info.width/2.0){
-                    if(map.info.width/2.0>=-ob_x){
-                        if(ob_x<=map.info.width/2.0){
-                            //if(!pixel[y][x].seg_ok){
-                            //    grid[(int)map.info.height/2 - ob_y][(int)map.info.width/2 + ob_x] = 100;
-                            //    grid[(int)map.info.height/2 - ob_y+1][(int)map.info.width/2 + ob_x] = 100;
-                            //    grid[(int)map.info.height/2 - ob_y+2][(int)map.info.width/2 + ob_x] = 100;
-                            //    
-                            //    pcl::PointXYZ pt(ob_y*map.info.resolution,-ob_x*map.info.resolution,0);
-                            //    p_g->points.push_back(pt);
-                            //}else {
-                            //    grid[(int)map.info.height/2 - ob_y][(int)map.info.width/2 + ob_x] = 0;
-                            //    grid[(int)map.info.height/2 - ob_y+1][(int)map.info.width/2 + ob_x] = 0;
-                            //    grid[(int)map.info.height/2 - ob_y+2][(int)map.info.width/2 + ob_x] = 0;
-                            //}
-                            if(pixel[y][x].seg_g_or_r == 'g'){
-                                grid[(int)map.info.height/2 - ob_y][(int)map.info.width/2 + ob_x] = 100;
-                                grid[(int)map.info.height/2 - ob_y+1][(int)map.info.width/2 + ob_x] = 100;
-                                grid[(int)map.info.height/2 - ob_y+2][(int)map.info.width/2 + ob_x] = 100;
-                                
-                                pcl::PointXYZ pt(ob_y*map.info.resolution,-ob_x*map.info.resolution,ob_z);
-                                p_g->points.push_back(pt);
-                            }else if(pixel[y][x].seg_g_or_r == 'r'){
-                                grid[(int)map.info.height/2 - ob_y][(int)map.info.width/2 + ob_x] = 0;
-                                grid[(int)map.info.height/2 - ob_y+1][(int)map.info.width/2 + ob_x] = 0;
-                                grid[(int)map.info.height/2 - ob_y+2][(int)map.info.width/2 + ob_x] = 0;
-                                
-                                pcl::PointXYZ pt(ob_y*map.info.resolution,-ob_x*map.info.resolution,ob_z);
-                                p_r->points.push_back(pt);
-                            }
-                        }
-                    }
+                /* if(pixel[y][x].seg_g_or_r == 'g'  &&  -0.3-cam_hight <= ob_z  &&  ob_z <= 0.9-cam_hight){ */
+                if(pixel[y][x].seg_g_or_r == 'g'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.5){
+                    pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
+                    p_g->points.push_back(pt);
+                /* }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -3.0 <= ground_theta(ob_x,ob_y,ob_z)  &&  ground_theta(ob_x,ob_y,ob_z) <= 3.0){ */
+                }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.2){
+                    // pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
+                    pcl::PointXYZ pt(ob_y,-ob_x,-cam_hight);
+                    p_r->points.push_back(pt);
                 }
             }
         }
     }
 }
+
+void calc_object_ignore_depth(void)
+{
+    for(int y=pixel_num_y*0.3;y<pixel_num_y;y++){
+        for(int x=0;x<pixel_num_x;x++){
+            float ob_y = cam_hight/tan(pixel[y][x].rad_y);
+            float ob_x = ob_y*tan(pixel[y][x].rad_x);
+            float ob_z = -cam_hight;
+            if(pixel[y][x].seg_g_or_r == 'g'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.5){
+                pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
+                p_g->points.push_back(pt);
+            /* }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -3.0 <= ground_theta(ob_x,ob_y,ob_z)  &&  ground_theta(ob_x,ob_y,ob_z) <= 3.0){ */
+            }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.2){
+                // pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
+                pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
+                p_r->points.push_back(pt);
+            }
+        }
+    }
+    
+}
+
 
 void pubPoints(ros::Publisher& pub, pcl::PointCloud<pcl::PointXYZ>& pcl_in)
 {
@@ -225,43 +206,24 @@ int main(int argc, char** argv)
     ros::Subscriber seg_sub = nh.subscribe("/deeplab/image", 100, seg_callback);
     image_transport::Subscriber depth_sub = it.subscribe("/camera/depth/resized_image", 100, depth_callback);
 
-    ros::Publisher map_pub = nh.advertise<nav_msgs::OccupancyGrid>("map", 100, true);
     ros::Publisher pc_g_pub = nh.advertise<sensor_msgs::PointCloud2>("/zed_grasspoints", 100, true);
     ros::Publisher pc_r_pub = nh.advertise<sensor_msgs::PointCloud2>("/zed_roadpoints", 100, true);
 
-    map.header.frame_id = "zed_depth_camera";
-    map.info.resolution = 0.050000;
-    map.info.width = 400;
-    map.info.height = 400;
-    map.info.origin.position.x = -10 ;
-    map.info.origin.position.y = -10 ;
-    map.info.origin.position.z = 0 ;
-    map.info.origin.orientation.x = 0 ;
-    map.info.origin.orientation.y = 0 ;
-    map.info.origin.orientation.z = 0 ;
-    map.info.origin.orientation.w = 0 ;
-    map.data.resize(map.info.width * map.info.height);
-
     ros::Rate loop_rate(10);
 
-    // store_angle(102.5, 70.0);
-    store_angle(120, 70.0);
+    store_angle(102.5, 70.0);
+    /* store_angle(120, 70.0); */
 
     while(ros::ok()){
         if(seg_flag){
-            init_grid();
 
-            calc_object();
+            // calc_object();
+            calc_object_ignore_depth();
             seg_flag = false;
 
-            store_mapdata();
-            
-            
             pubPoints(pc_g_pub, *p_g); 
-            pubPoints(pc_r_pub, *p_r); 
-            
-            
-            map_pub.publish(map);
+            pubPoints(pc_r_pub, *p_r);
+            printf("grass2grid\n");
         }
         ros::spinOnce();
         loop_rate.sleep();
