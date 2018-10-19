@@ -80,10 +80,28 @@ int point_to_index(nav_msgs::OccupancyGrid grid, int x, int y)
 // 	}
 // }
 
+void expand_obstacle(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensity
+{
+	const int range = 3;
+	std::vector<int> indices_obs;
+	for(size_t i=0;i<grid.data.size();i++)	if(grid.data[i]==100) indices_obs.push_back(i);
+	for(size_t i=0;i<indices_obs.size();i++){
+		int x, y;
+		index_to_point(grid, indices_obs[i], x, y);
+		for(int j=-range;j<=range;j++){
+			for(int k=-range;k<=range;k++){
+				if(cell_is_inside(grid, x+j, y+k))	grid.data[point_to_index(grid, x+j, y+k)] = grid.data[indices_obs[i]];
+			}
+		}
+	}
+}
+
 void ambiguity_filter(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensity
 {
 	// std::cout << "AMBIGUITY FILTER" << std::endl;
 	
+	std::vector<int> indices_obs;
+
 	const int range = 3;
 	for(size_t i=0;i<grid.data.size();i++){
 		// if(grid.data[i]>0 && grid.data[i]<100){
@@ -211,9 +229,11 @@ void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 	grid_lidar = *msg;
 	if(grid_store.data.empty())	grid_store = *msg;
 
+	expand_obstacle(grid_lidar);
+
 	// ambiguity_filter(grid_now);
 	grid_update_lidar();
-	ambiguity_filter(grid_store);
+	// ambiguity_filter(grid_store);
 
 	if(first_callback_grid || !robot_started_running)	initialize_around_startpoint();
 	first_callback_grid = false;
@@ -228,7 +248,7 @@ void callback_grid_zed(const nav_msgs::OccupancyGridConstPtr& msg)
 
 	// ambiguity_filter(grid_now);
 	grid_update_zed();
-	ambiguity_filter(grid_store);
+	// ambiguity_filter(grid_store);
 }
 
 int main(int argc, char** argv)
@@ -255,7 +275,7 @@ int main(int argc, char** argv)
 		ros::spinOnce();
 		
 		if(!grid_store.data.empty()){
-			// ambiguity_filter(grid_store);
+			ambiguity_filter(grid_store);
 			pub_grid.publish(grid_store);
 		}
 		
