@@ -6,11 +6,11 @@
 class PointCloudTransform{
 	private:
 		ros::NodeHandle nh;
+		ros::NodeHandle nhPrivate;
 		tf::TransformListener tflistener;
 		ros::Subscriber sub;
 		ros::Publisher pub;
 		sensor_msgs::PointCloud pc_;
-		ros::NodeHandle nhPrivate;
 		std::string target;
 
 	public:
