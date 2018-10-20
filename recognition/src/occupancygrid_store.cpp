@@ -201,7 +201,7 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	if(odom.twist.twist.linear.x>0.0)	nomove_time = 0.0;
 	else	nomove_time += dt;
 	
-	const max_stuck_time = 10.0;	//[s]
+	const double max_stuck_time = 10.0;	//[s]
 	if(nomove_time>max_stuck_time)	robot_is_running = false;
 	else	robot_is_running = true;
 	
