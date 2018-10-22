@@ -18,7 +18,8 @@ bool first_callback_grid = true;
 double theta = 0.0;
 double delta_x = 0.0;
 double delta_y = 0.0;
-bool robot_started_running = false;
+bool robot_is_running = false;
+double nomove_time = 0.0;
 
 bool cell_is_inside_meter(nav_msgs::OccupancyGrid grid, double x, double y)
 {
@@ -80,10 +81,28 @@ int point_to_index(nav_msgs::OccupancyGrid grid, int x, int y)
 // 	}
 // }
 
+void expand_obstacle(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensity
+{
+	const int range = 3;
+	std::vector<int> indices_obs;
+	for(size_t i=0;i<grid.data.size();i++)	if(grid.data[i]==100) indices_obs.push_back(i);
+	for(size_t i=0;i<indices_obs.size();i++){
+		int x, y;
+		index_to_point(grid, indices_obs[i], x, y);
+		for(int j=-range;j<=range;j++){
+			for(int k=-range;k<=range;k++){
+				if(cell_is_inside(grid, x+j, y+k))	grid.data[point_to_index(grid, x+j, y+k)] = grid.data[indices_obs[i]];
+			}
+		}
+	}
+}
+
 void ambiguity_filter(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensity
 {
 	// std::cout << "AMBIGUITY FILTER" << std::endl;
 	
+	std::vector<int> indices_obs;
+
 	const int range = 3;
 	for(size_t i=0;i<grid.data.size();i++){
 		// if(grid.data[i]>0 && grid.data[i]<100){
@@ -178,12 +197,16 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	time_odom_now = ros::Time::now();
 	double dt = (time_odom_now - time_odom_last).toSec();
 	time_odom_last = time_odom_now;
-
-	if(!robot_started_running){
-		if(odom.twist.twist.linear.x>0.5)	robot_started_running = true;
-	}
-
-	else if(!first_callback_odom && !grid_store.data.empty())	move_cells(dt);
+	
+	if(odom.twist.twist.linear.x>0.0)	nomove_time = 0.0;
+	else	nomove_time += dt;
+	
+	const double max_stuck_time = 10.0;	//[s]
+	if(nomove_time>max_stuck_time)	robot_is_running = false;
+	else	robot_is_running = true;
+	
+	if(!first_callback_odom && !grid_store.data.empty() && robot_is_running)	move_cells(dt);
+	else	initialize_around_startpoint();
 
 	first_callback_odom = false;
 }
@@ -211,11 +234,13 @@ void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 	grid_lidar = *msg;
 	if(grid_store.data.empty())	grid_store = *msg;
 
+	expand_obstacle(grid_lidar);
+
 	// ambiguity_filter(grid_now);
 	grid_update_lidar();
-	ambiguity_filter(grid_store);
+	// ambiguity_filter(grid_store);
 
-	if(first_callback_grid || !robot_started_running)	initialize_around_startpoint();
+	// if(first_callback_grid || !robot_is_running)	initialize_around_startpoint();
 	first_callback_grid = false;
 }
 
@@ -228,7 +253,7 @@ void callback_grid_zed(const nav_msgs::OccupancyGridConstPtr& msg)
 
 	// ambiguity_filter(grid_now);
 	grid_update_zed();
-	ambiguity_filter(grid_store);
+	// ambiguity_filter(grid_store);
 }
 
 int main(int argc, char** argv)
@@ -255,7 +280,7 @@ int main(int argc, char** argv)
 		ros::spinOnce();
 		
 		if(!grid_store.data.empty()){
-			// ambiguity_filter(grid_store);
+			ambiguity_filter(grid_store);
 			pub_grid.publish(grid_store);
 		}
 		

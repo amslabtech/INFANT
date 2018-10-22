@@ -92,8 +92,8 @@ bool radial_search(double& path_length, double theta, double search_range)
 		}
 		x = path_length*cos(theta);
 		y = path_length*sin(theta);
-		// if(local_map.data[meterpoint_to_index(local_map, x, y)]>0 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
-		if(local_map.data[meterpoint_to_index(local_map, x, y)]>50 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
+		if(local_map.data[meterpoint_to_index(local_map, x, y)]>0 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
+		// if(local_map.data[meterpoint_to_index(local_map, x, y)]>50 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
 	}
 }
 void detection_main(geometry_msgs::PoseStamped& goal)
