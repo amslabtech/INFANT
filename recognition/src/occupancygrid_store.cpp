@@ -58,42 +58,42 @@ int point_to_index(nav_msgs::OccupancyGrid grid, int x, int y)
 	return	y_*grid.info.width + x_;
 }
 
-// void filter(nav_msgs::OccupancyGrid grid)
+// void expand_obstacle(nav_msgs::OccupancyGrid& grid)
 // {
-// 	const int range = 2;
-// 	for(int i=0;i<grid.info.width*grid.info.height;i++){
-// 		if(grid.data[i]==-1){
-// 			// std::cout << "-----" << std::endl;
-// 			int x, y;
-// 			index_to_point(grid_store, i, x, y);
-// 			int count_roadcell = 0;
-// 			for(int j=-range;j<=range;j++){
-// 				for(int k=-range;k<=range;k++){
-// 					if(!cell_is_inside(grid_store, point_to_index(grid_store, x+j, y+k)))	break;
-// 					if(grid.data[point_to_index(grid_store, x+j, x+k)]==0)	count_roadcell++;
-// 				}
-// 			}
-// 			if(count_roadcell>(2*range+1)*(2*range+1)-1){
-// 				// std::cout << "Grid is updated" << std::endl;
-// 				grid.data[i] = 0;
+// 	const int range = 3;
+// 	std::vector<int> indices_obs;
+// 	for(size_t i=0;i<grid.data.size();i++)	if(grid.data[i]==100) indices_obs.push_back(i);
+// 	for(size_t i=0;i<indices_obs.size();i++){
+// 		int x, y;
+// 		index_to_point(grid, indices_obs[i], x, y);
+// 		for(int j=-range;j<=range;j++){
+// 			for(int k=-range;k<=range;k++){
+// 				if(cell_is_inside(grid, x+j, y+k))	grid.data[point_to_index(grid, x+j, y+k)] = grid.data[indices_obs[i]];
 // 			}
 // 		}
 // 	}
 // }
 
-void expand_obstacle(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensity
+void expand_obstacle(nav_msgs::OccupancyGrid& grid)
 {
 	const int range = 3;
-	std::vector<int> indices_obs;
-	for(size_t i=0;i<grid.data.size();i++)	if(grid.data[i]==100) indices_obs.push_back(i);
-	for(size_t i=0;i<indices_obs.size();i++){
-		int x, y;
-		index_to_point(grid, indices_obs[i], x, y);
-		for(int j=-range;j<=range;j++){
-			for(int k=-range;k<=range;k++){
-				if(cell_is_inside(grid, x+j, y+k))	grid.data[point_to_index(grid, x+j, y+k)] = grid.data[indices_obs[i]];
+	for(size_t i=0;i<grid.data.size();i++){
+		if(grid.data[i]==100){
+			int x, y;
+			index_to_point(grid, i, x, y);
+			for(int j=-range;j<=range;j++){
+				for(int k=-range;k<=range;k++){
+					if(cell_is_inside(grid, x+j, y+k) && grid.data[point_to_index(grid, x+j, y+k)]!=grid.data[i])	grid.data[point_to_index(grid, x+j, y+k)] = grid.data[i]-1;
+				}
 			}
 		}
+	}
+}
+
+void shrink_obstacle(nav_msgs::OccupancyGrid& grid)
+{
+	for(size_t i=0;i<grid.data.size();i++){
+		if(grid.data[i]==99)	grid.data[i] = 0;
 	}
 }
 
@@ -201,12 +201,23 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	if(odom.twist.twist.linear.x>0.0)	nomove_time = 0.0;
 	else	nomove_time += dt;
 	
-	const double max_stuck_time = 10.0;	//[s]
-	if(nomove_time>max_stuck_time)	robot_is_running = false;
-	else	robot_is_running = true;
-	
-	if(!first_callback_odom && !grid_store.data.empty() && robot_is_running)	move_cells(dt);
-	else	initialize_around_startpoint();
+	const double time_shrink = 5.0;	//[s]
+	const double time_initialize = 10.0;	//[s]
+	if(!grid_store.data.empty()){
+		if(nomove_time>time_initialize || first_callback_odom){
+			initialize_around_startpoint();
+			robot_is_running = false;
+		}
+		else if(nomove_time>time_shrink){
+			shrink_obstacle(grid_store);
+			robot_is_running = false;
+		}
+		else{
+			move_cells(dt);
+			robot_is_running = true;
+		}
+	}
+	// if(!first_callback_odom && !grid_store.data.empty() && robot_is_running)	move_cells(dt);
 
 	first_callback_odom = false;
 }

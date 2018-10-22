@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 <launch>
-        <node name="speed_control" pkg="infant_planning" type="speed_control" />
-        <node name="trajectory_manager" pkg="infant_planning" type="trajectory_manager"/>
-        <node name="generate_server" pkg="infant_planning" type="generate_server" />
-		<!-- <node name="local_goal_creator" pkg="infant_planning" type="local_goal_creator" /> -->
-		<!-- <node name="motion_planner" pkg="infant_planning" type="motion_planner" /> -->
+	<node name="speed_control" pkg="infant_planning" type="speed_control" />
+	<node name="trajectory_manager" pkg="infant_planning" type="trajectory_manager" />
+		<!-- <remap from="local_goal" to="local_goal_oishi" /> -->
+	<!-- </node> -->
+
+	<node name="generate_server" pkg="infant_planning" type="generate_server" />
+	<!-- <node name="local_goal_creator" pkg="infant_planning" type="local_goal_creator" /> -->
+	<!-- <node name="motion_planner" pkg="infant_planning" type="motion_planner" /> -->
 
 </launch>
