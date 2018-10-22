@@ -89,6 +89,9 @@ void mapCallback(const nav_msgs::OccupancyGridConstPtr& msg){
 	boost::mutex::scoped_lock(map_mutex_);	
 	grd_=*msg;
 	grd_.info.origin.position.z = 0;////////
+	for(int i=0;i<grd_.info.width*grd_.info.height;i++){
+		if(grd_.data[i]>0) grd_.data[i] = 100;
+	}
 	callback_flag=true;
 }
 
