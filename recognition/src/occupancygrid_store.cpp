@@ -76,7 +76,7 @@ int point_to_index(nav_msgs::OccupancyGrid grid, int x, int y)
 
 void expand_obstacle(nav_msgs::OccupancyGrid& grid)
 {
-	const int range = 3;
+	const int range = 4;
 	for(size_t i=0;i<grid.data.size();i++){
 		if(grid.data[i]==100){
 			int x, y;
@@ -202,7 +202,7 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	else	nomove_time += dt;
 	
 	const double time_shrink = 5.0;	//[s]
-	const double time_initialize = 10.0;	//[s]
+	const double time_initialize = 15.0;	//[s]
 	if(!grid_store.data.empty()){
 		if(nomove_time>time_initialize || first_callback_odom){
 			initialize_around_startpoint();
