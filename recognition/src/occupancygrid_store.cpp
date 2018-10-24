@@ -76,7 +76,7 @@ int point_to_index(nav_msgs::OccupancyGrid grid, int x, int y)
 
 void expand_obstacle(nav_msgs::OccupancyGrid& grid)
 {
-	const int range = 4;
+	const int range = 2;
 	for(size_t i=0;i<grid.data.size();i++){
 		if(grid.data[i]==100){
 			int x, y;

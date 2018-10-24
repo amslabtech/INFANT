@@ -17,8 +17,8 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>)
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_ground (new pcl::PointCloud<pcl::PointXYZINormal>);
 nav_msgs::OccupancyGrid grid;
-const double w = 11.0;	//x[m]
-const double h = 11.0;	//y[m]
+const double w = 20.0;	//x[m]
+const double h = 20.0;	//y[m]
 // std::vector<double> fitting_errors;
 std::string grid_frame_id;
 
@@ -259,7 +259,7 @@ void grid_initialization(void)
 {
 	// grid.header.frame_id = "/localmap";
 	// grid.header.frame_id = "/velodyne";
-	grid.info.resolution = 0.1;
+	grid.info.resolution = 0.2;
 	grid.info.width = w/grid.info.resolution + 1;
 	grid.info.height = h/grid.info.resolution + 1;
 	grid.info.origin.position.x = -w/2.0;
