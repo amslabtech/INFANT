@@ -80,7 +80,7 @@ void setTurnCommand(infant_planning::Velocity& cmd_vel,
 					float& target,
 					float& robo)
 {
-	float turn_angular = 0.3;
+	float turn_angular = 0.1;
 	float turn_dir = 1;
 	if(angle_diff(target, robo)>0) turn_dir=-1;
 	cmd_vel.op_linear = 0;
