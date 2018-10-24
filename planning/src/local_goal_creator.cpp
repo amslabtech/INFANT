@@ -115,7 +115,7 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 
 	const double angle_step = 5.0;	//[deg]
 	const double angle_range = 45.0;	//[deg]
-	double search_range = local_map.info.width*local_map.info.resolution*0.4;
+	double search_range = local_map.info.width*local_map.info.resolution*0.25;
 	if(search_range>local_map.info.height*local_map.info.resolution){
 		search_range = local_map.info.height*local_map.info.resolution;
 	}

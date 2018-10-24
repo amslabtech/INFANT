@@ -21,7 +21,7 @@ const float Vmax = 0.8;	// infantの設定最高速度
 const float Vmax_ = 1.0/Vmax;	// infantの設定最高速度
 const float Lmin = 2.0;
 //const float Lmax = 6.0;
-const float Lmax = 4.0;
+const float Lmax = 5.0;
 // const float MaxAngle = 1.2;
 const float MaxAngle = 1.2;
 
