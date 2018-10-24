@@ -115,7 +115,7 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 
 	const double angle_step = 5.0;	//[deg]
 	const double angle_range = 45.0;	//[deg]
-	double search_range = local_map.info.width*local_map.info.resolution*0.5;
+	double search_range = local_map.info.width*local_map.info.resolution*0.4;
 	if(search_range>local_map.info.height*local_map.info.resolution){
 		search_range = local_map.info.height*local_map.info.resolution;
 	}
@@ -161,7 +161,7 @@ void detection_main(geometry_msgs::PoseStamped& goal)
 	goal.pose.orientation = tf::createQuaternionMsgFromYaw(longest_path_length_angle);
 	std::cout << "---------------------------------" << std::endl;
 	std::cout << "intersection:"<< intersection << std::endl;
-	//std::cout << "goal diff angle:" << goal_diff_angle << std::endl;
+	std::cout << "search_range:" << search_range << std::endl;
 	std::cout << "yaw:" << yaw << std::endl;
 	std::cout << "robot_orientation:" << robot_orientation << std::endl;
 	std::cout << "target_orientation:" << target_orientation << std::endl;

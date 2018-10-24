@@ -20,7 +20,8 @@
 const float Vmax = 0.8;	// infantの設定最高速度
 const float Vmax_ = 1.0/Vmax;	// infantの設定最高速度
 const float Lmin = 2.0;
-const float Lmax = 6.0;
+//const float Lmax = 6.0;
+const float Lmax = 4.0;
 // const float MaxAngle = 1.2;
 const float MaxAngle = 1.2;
 
@@ -53,7 +54,7 @@ TrajectoryGeneration trajectory(16.0, -16.0,		//curvature
 //ShapeParameter p_ss = {1000, 31, 3, 7.0, -1.6, 1.6, -0.7, 0.7};
 //ShapeParameter p_ss = {1000, 9, 3, 7.0, -0.8, 0.8, -0.7, 0.7};	//20151101
 //ShapeParameter p_ss = {1000, 9, 5, 7.0, -1.2, 1.2, -0.9, 0.9};	//20151105
-ShapeParameter p_ss = {1000, 31, 5, 4.0, -1.6, 1.6, -0.9, 0.9};	//20170224
+ShapeParameter p_ss = {1000, 31, 5, 7.0, -1.6, 1.6, -0.9, 0.9};	//20181024
 //	{n_s:固定値，n_p:目的地数，n_h:目的地あたりの本数，d:pathの長さ，alpha_min:角度，alpha_max:角度，psi_min(max)目的地での角度の開き}
 
 
