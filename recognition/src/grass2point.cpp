@@ -150,11 +150,11 @@ void calc_object(void)
                 float ob_y = (pixel[y][x].depth*cos(pixel[y][x].rad_y)*cos(pixel[y][x].rad_x) );
                 float ob_z = -(pixel[y][x].depth*sin(pixel[y][x].rad_y) );
                 /* if(pixel[y][x].seg_g_or_r == 'g'  &&  -0.3-cam_hight <= ob_z  &&  ob_z <= 0.9-cam_hight){ */
-                if(pixel[y][x].seg_g_or_r == 'g'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.5){
+                if(pixel[y][x].seg_g_or_r == 'g'  &&  -pixel[y][x].depth*tan(deg2rad(3.0))-0.3 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(3.0))+0.5){
                     pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
                     p_g->points.push_back(pt);
                 /* }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -3.0 <= ground_theta(ob_x,ob_y,ob_z)  &&  ground_theta(ob_x,ob_y,ob_z) <= 3.0){ */
-                }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.2){
+                }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -pixel[y][x].depth*tan(deg2rad(3.0))-0.3 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(3.0))+0.3){
                     // pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
                     pcl::PointXYZ pt(ob_y,-ob_x,-cam_hight);
                     p_r->points.push_back(pt);
@@ -217,8 +217,8 @@ int main(int argc, char** argv)
     while(ros::ok()){
         if(seg_flag){
 
-            // calc_object();
-            calc_object_ignore_depth();
+            calc_object();
+            // calc_object_ignore_depth();
             seg_flag = false;
 
             pubPoints(pc_g_pub, *p_g); 
