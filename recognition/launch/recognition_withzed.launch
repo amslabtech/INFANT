@@ -1,0 +1,53 @@
+<launch>
+    <node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
+
+<!-- <node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_velodyne"> -->
+	<!-- 	<remap from="/cloud" to="/velodyne_points"/> -->
+	<!-- 	<remap from="/cloud/renamed_frame" to="/velodyne_points/renamed_frame"/> -->
+	<!-- 	<param name="new_id" type="string" value="velodyne_odom"/> -->
+	<!-- </node> -->
+	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_ground2">
+		<remap from="/cloud" to="/ground2"/>
+		<remap from="/cloud/renamed_frame" to="/ground2/renamed_frame"/>
+		<param name="new_id" type="string" value="velodyne_odom"/>
+	</node>
+	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_rmground2">
+		<remap from="/cloud" to="/rm_ground2"/>
+		<remap from="/cloud/renamed_frame" to="/rm_ground2/renamed_frame"/>
+		<param name="new_id" type="string" value="velodyne_odom"/>
+	</node>
+	
+	<!-- <node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_velodyne"> -->
+	<!-- 	<remap from="/cloud" to="/velodyne_points/renamed_frame"/> -->
+	<!-- 	<remap from="/cloud/transformed" to="/velodyne_points/renamed_frame/transformed"/> -->
+	<!-- 	<param name="target" type="string" value="localmap"/> -->
+	<!-- </node> -->
+	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_ground2">
+		<remap from="/cloud" to="/ground2/renamed_frame"/>
+		<remap from="/cloud/transformed" to="/ground2/renamed_frame/transformed"/>
+		<param name="target" type="string" value="localmap"/>
+	</node>
+	<node pkg="infant_recognition" type="pc_transformer" name="pc_transformer_rmground2">
+		<remap from="/cloud" to="/rm_ground2/renamed_frame"/>
+		<remap from="/cloud/transformed" to="/rm_ground2/renamed_frame/transformed"/>
+		<param name="target" type="string" value="localmap"/>
+	</node>
+
+    <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
+	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
+
+	<!-- zed -->
+	<node pkg="infant_recognition" type="grass2point" name="grass2grid"/>
+	<node pkg="infant_recognition" type="pc_transformer" name="zed_grass2localmap">
+		<remap from="/cloud" to="/zed_grasspoints"/>
+		<remap from="/cloud/transformed" to="/zed_grasspoints/transformed"/>
+		<param name="target" type="string" value="localmap"/>
+	</node>
+	<node pkg="infant_recognition" type="pc_transformer" name="zed_road2localmap">
+		<remap from="/cloud" to="/zed_roadpoints"/>
+		<remap from="/cloud/transformed" to="/zed_roadpoints/transformed"/>
+		<param name="target" type="string" value="localmap"/>
+	</node>
+	<node pkg="infant_recognition" type="occupancygrid_zed" name="occupancygrid_zed" output="screen"/>
+	</node>
+</launch>

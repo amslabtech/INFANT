@@ -17,6 +17,7 @@ float target_orientation = 0.0;
 float robot_orientation = 0.0;
 float MARGIN_ANGLE = 0.3;
 double longest_path_length_angle = 0.0;
+bool switch_intencity_is_obstacle = true;
 
 
 float get_yaw(geometry_msgs::Quaternion q)
@@ -92,8 +93,12 @@ bool radial_search(double& path_length, double theta, double search_range)
 		}
 		x = path_length*cos(theta);
 		y = path_length*sin(theta);
-		if(local_map.data[meterpoint_to_index(local_map, x, y)]>0 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
-		// if(local_map.data[meterpoint_to_index(local_map, x, y)]>50 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
+		if(switch_intencity_is_obstacle){
+			if(local_map.data[meterpoint_to_index(local_map, x, y)]>0 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
+		}
+		else{
+			if(local_map.data[meterpoint_to_index(local_map, x, y)]>50 || local_map.data[meterpoint_to_index(local_map, x, y)]==-1)	return false;
+		}
 	}
 }
 void detection_main(geometry_msgs::PoseStamped& goal)
