@@ -20,6 +20,7 @@ double delta_x = 0.0;
 double delta_y = 0.0;
 bool robot_is_running = false;
 double nomove_time = 0.0;
+double time_moving = 0.0;
 
 bool cell_is_inside_meter(nav_msgs::OccupancyGrid grid, double x, double y)
 {
@@ -90,6 +91,26 @@ void expand_obstacle(nav_msgs::OccupancyGrid& grid)
 	}
 }
 
+void partial_expand_obstacle(nav_msgs::OccupancyGrid& grid)
+{
+	const double range_no_expand = 2.0;	//[m]
+	const int range = 2;
+	for(size_t i=0;i<grid.data.size();i++){
+		if(grid.data[i]==100){
+			int x, y;
+			index_to_point(grid, i, x, y);
+			double dist = sqrt(x*grid.info.resolution*x*grid.info.resolution + y*grid.info.resolution*y*grid.info.resolution);
+			if(dist>range_no_expand){
+				for(int j=-range;j<=range;j++){
+					for(int k=-range;k<=range;k++){
+						if(cell_is_inside(grid, x+j, y+k) && grid.data[point_to_index(grid, x+j, y+k)]!=grid.data[i])	grid.data[point_to_index(grid, x+j, y+k)] = grid.data[i]-1;
+					}
+				}
+			}
+		}
+	}
+}
+
 void shrink_obstacle(nav_msgs::OccupancyGrid& grid)
 {
 	for(size_t i=0;i<grid.data.size();i++){
@@ -106,7 +127,7 @@ void ambiguity_filter(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensit
 	const int range = 3;
 	for(size_t i=0;i<grid.data.size();i++){
 		// if(grid.data[i]>0 && grid.data[i]<100){
-		if(grid.data[i]!=0 && grid.data[i]!=100){
+		if(grid.data[i]>0 && grid.data[i]<99){
 			int x, y;
 			index_to_point(grid, i, x, y);
 			int count_zerocell = 0; 
@@ -198,8 +219,14 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	double dt = (time_odom_now - time_odom_last).toSec();
 	time_odom_last = time_odom_now;
 	
-	if(odom.twist.twist.linear.x>0.0)	nomove_time = 0.0;
-	else	nomove_time += dt;
+	if(odom.twist.twist.linear.x>1.0e-3){
+		nomove_time = 0.0;
+		time_moving += dt;
+	}
+	else{
+		nomove_time += dt;
+		time_moving = 0.0;
+	}
 	
 	const double time_shrink = 5.0;	//[s]
 	const double time_initialize = 15.0;	//[s]
@@ -245,7 +272,7 @@ void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 	grid_lidar = *msg;
 	if(grid_store.data.empty())	grid_store = *msg;
 
-	expand_obstacle(grid_lidar);
+	// expand_obstacle(grid_lidar);
 
 	// ambiguity_filter(grid_now);
 	grid_update_lidar();
@@ -290,7 +317,10 @@ int main(int argc, char** argv)
 	while(ros::ok()){
 		ros::spinOnce();
 		
+		const double time_expand = 3.0;	//[s]
 		if(!grid_store.data.empty()){
+			if(time_moving>time_expand)	expand_obstacle(grid_store);
+			else	partial_expand_obstacle(grid_store);
 			ambiguity_filter(grid_store);
 			pub_grid.publish(grid_store);
 		}
