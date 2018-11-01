@@ -80,7 +80,7 @@ void setTurnCommand(infant_planning::Velocity& cmd_vel,
 					float& target,
 					float& robo)
 {
-	float turn_angular = 0.1;
+	float turn_angular = 0.07;
 	float turn_dir = 1;
 	if(angle_diff(target, robo)>0) turn_dir=-1;
 	cmd_vel.op_linear = 0;
@@ -222,7 +222,7 @@ void MotionPlanner()
 				setStopCommand(cmd_vel);
 			}
 			else if (intersection || turn_flag){
-				if(fabs(angle_diff(target,robot_yaw))<0.1){
+				if(fabs(angle_diff(target,robot_yaw))<0.3){
 					cout<<"turn"<<endl;
 					setTurnCommand(cmd_vel, target, robot_yaw);
 					stop_count=0;
