@@ -121,7 +121,7 @@ void store_angle(float angle_x,float angle_y)
 {
     float dx = angle_x/pixel_num_x;
     float dy = angle_y/pixel_num_y;
-	float modify_angle_y = -16;//cam angle = -16[deg]
+	float modify_angle_y = 0;//cam angle = -16[deg]
     float init_x = angle_x/2;
     float init_y = angle_y/2;
     for(int x=0;x<pixel_num_x;x++){
@@ -171,11 +171,11 @@ void calc_object_ignore_depth(void)
             float ob_y = cam_hight/tan(pixel[y][x].rad_y);
             float ob_x = ob_y*tan(pixel[y][x].rad_x);
             float ob_z = -cam_hight;
-            if(pixel[y][x].seg_g_or_r == 'g'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.5){
+            if(pixel[y][x].seg_g_or_r == 'g'  &&  -pixel[y][x].depth*tan(deg2rad(3.0))-0.3 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(3.0))+0.5){
                 pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
                 p_g->points.push_back(pt);
             /* }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -3.0 <= ground_theta(ob_x,ob_y,ob_z)  &&  ground_theta(ob_x,ob_y,ob_z) <= 3.0){ */
-            }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -pixel[y][x].depth*tan(deg2rad(2.0))-0.2 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(2.0))+0.2){
+            }else if(pixel[y][x].seg_g_or_r == 'r'  &&  -pixel[y][x].depth*tan(deg2rad(3.0))-0.3 <= ob_z+cam_hight  &&  ob_z+cam_hight <= pixel[y][x].depth*tan(deg2rad(3.0))+0.3){
                 // pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
                 pcl::PointXYZ pt(ob_y,-ob_x,ob_z);
                 p_r->points.push_back(pt);
