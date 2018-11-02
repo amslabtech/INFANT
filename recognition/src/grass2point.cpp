@@ -143,7 +143,8 @@ float ground_theta(float x,float y,float z)
 
 void calc_object(void)
 {
-    for(int y=pixel_num_y*1/4;y<pixel_num_y;y++){
+    /* for(int y=pixel_num_y*1/4;y<pixel_num_y;y++){ */
+    for(int y=pixel_num_y*1/2;y<pixel_num_y;y++){
         for(int x=0;x<pixel_num_x;x++){
             if(!std::isnan(pixel[y][x].depth) && pixel[y][x].depth <= 20.0){
                 float ob_x = (pixel[y][x].depth*cos(pixel[y][x].rad_y)*sin(pixel[y][x].rad_x) );
