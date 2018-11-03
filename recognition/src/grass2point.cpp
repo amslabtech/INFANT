@@ -121,7 +121,7 @@ void store_angle(float angle_x,float angle_y)
 {
     float dx = angle_x/pixel_num_x;
     float dy = angle_y/pixel_num_y;
-	float modify_angle_y = 0;//cam angle = -16[deg]
+	float modify_angle_y = -13;//cam angle = -13[deg]
     float init_x = angle_x/2;
     float init_y = angle_y/2;
     for(int x=0;x<pixel_num_x;x++){
@@ -143,8 +143,8 @@ float ground_theta(float x,float y,float z)
 
 void calc_object(void)
 {
-    /* for(int y=pixel_num_y*1/4;y<pixel_num_y;y++){ */
-    for(int y=pixel_num_y*1/2;y<pixel_num_y;y++){
+    for(int y=pixel_num_y*1/4;y<pixel_num_y;y++){
+    /* for(int y=pixel_num_y*1/2;y<pixel_num_y;y++){ */
         for(int x=0;x<pixel_num_x;x++){
             if(!std::isnan(pixel[y][x].depth) && pixel[y][x].depth <= 20.0){
                 float ob_x = (pixel[y][x].depth*cos(pixel[y][x].rad_y)*sin(pixel[y][x].rad_x) );
