@@ -137,7 +137,7 @@ void ambiguity_filter(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensit
 				}
 			}
 			int num_cells = (2*range + 1)*(2*range + 1);
-			const double ratio = 0.7;
+			const double ratio = 0.725;
 			double threshold = num_cells*ratio;
 			if(count_zerocell>threshold)	grid.data[i] = 0;
 			// if(count_zerocell>0)	std::cout << "count_zerocell = " << count_zerocell << std::endl;
@@ -228,8 +228,8 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 		time_moving = 0.0;
 	}
 	
-	const double time_shrink = 5.0;	//[s]
-	const double time_initialize = 15.0;	//[s]
+	const double time_shrink = 3.0;	//[s]
+	const double time_initialize = 5.0;	//[s]
 	if(!grid_store.data.empty()){
 		if(nomove_time>time_initialize || first_callback_odom){
 			initialize_around_startpoint();

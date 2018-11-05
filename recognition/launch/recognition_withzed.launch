@@ -49,5 +49,4 @@
 		<param name="target" type="string" value="localmap"/>
 	</node>
 	<node pkg="infant_recognition" type="occupancygrid_zed" name="occupancygrid_zed" output="screen"/>
-	</node>
 </launch>
