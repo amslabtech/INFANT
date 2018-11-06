@@ -194,7 +194,8 @@ void pubPoints(ros::Publisher& pub, pcl::PointCloud<pcl::PointXYZ>& pcl_in)
     sensor_msgs::PointCloud2 ros_out;
     pcl::toROSMsg(pcl_in, ros_out);
     ros_out.header.frame_id = "/zed";
-    ros_out.header.stamp = ros::Time::now();
+    // ros_out.header.stamp = ros::Time::now();
+    ros_out.header.stamp = depth_img.header.stamp;
     pub.publish(ros_out);
     pcl_in.points.clear();
 }
