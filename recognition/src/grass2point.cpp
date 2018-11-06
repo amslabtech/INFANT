@@ -207,7 +207,8 @@ int main(int argc, char** argv)
     image_transport::ImageTransport it(nh);
 
     ros::Subscriber seg_sub = nh.subscribe("/deeplab/image", 100, seg_callback);
-    image_transport::Subscriber depth_sub = it.subscribe("/camera/depth/resized_image", 100, depth_callback);
+    /* image_transport::Subscriber depth_sub = it.subscribe("/camera/depth/resized_image", 100, depth_callback); */
+    image_transport::Subscriber depth_sub = it.subscribe("/camera/depth/down_depth_image", 100, depth_callback);
 
     ros::Publisher pc_g_pub = nh.advertise<sensor_msgs::PointCloud2>("/zed_grasspoints", 100, true);
     ros::Publisher pc_r_pub = nh.advertise<sensor_msgs::PointCloud2>("/zed_roadpoints", 100, true);
