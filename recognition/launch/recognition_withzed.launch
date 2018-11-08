@@ -1,6 +1,7 @@
 <launch>
-    <node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
-	
+	<!-- tf -->
+	<node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
+
 	<!-- velodyne -->
     <node pkg="velodyne_height_map" type="rm_ground_node_minmax" name="rm_ground"/>
 	
@@ -26,8 +27,8 @@
 		<param name="target" type="string" value="localmap"/>
 	</node>
 
-    <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
-	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
+    <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar"/>
+	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store"/>
 
 	<!-- zed -->
 	<node pkg="infant_recognition" type="grass2point" name="grass2grid"/>
@@ -41,6 +42,7 @@
 		<remap from="/cloud/transformed" to="/zed_roadpoints/transformed"/>
 		<param name="target" type="string" value="localmap"/>
 	</node>
-	<node pkg="infant_recognition" type="occupancygrid_zed" name="occupancygrid_zed" output="screen"/>
-    
+	<node pkg="infant_recognition" type="occupancygrid_zed" name="occupancygrid_zed"/>
+	<!-- combine -->
+	<node pkg="infant_recognition" type="gridmap_fusion" name="gridmap_fusion"/>
 </launch>
