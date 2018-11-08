@@ -541,7 +541,11 @@ void GlobalPathCreator()
             yaw_cnt++;
         }
         Global_path[0][1]=100;
-        // cout<<"yaw_flag="<<yaw_flag<<endl;
+		// cout<<"yaw_flag="<<yaw_flag<<endl;
+		//cout<<"start_cnt"<<start_cnt<<endl;
+		// cout<<"goal_cnt"<<goal_cnt<<endl;
+		// cout<<"global_path[start]"<<Global_path[start_cnt][1]<<endl;
+		// cout<<"global_path[goal]"<<Global_path[goal_cnt][0]<<endl;
         if(!yaw_flag){
             if(Global_path[goal_cnt][0]==estimate_start){
                 cout<<"aaaaaaaaaaa"<<endl;

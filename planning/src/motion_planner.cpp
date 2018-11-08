@@ -21,15 +21,11 @@
 
 using namespace std;
 
-const string header_frame("/localmap");
-const string robot_frame("/velodyne_odom");
-//const string robot_frame("/velodyne");
 const float Vmax=0.9;
 const float ANGULARmax=1.0; 
 const float ANGULARmin=0.1;
 const int MaxStop=40; //4[s]
-const float Max_ndist=3.0;
-float THRESH_ANG=0.25*M_PI;//HALF_PI
+const float THRESH_ANG=0.26; //15[deg]
 
 ros::Publisher vel_pub;
 int time_count=0;
@@ -41,7 +37,6 @@ trajectory_generation::VelocityArray g_v_array;
 float target=0.0;
 float robot_yaw=0.0;
 int mode=0;
-float n_dist=0;
 
 float get_yaw(geometry_msgs::Quaternion q)
 {
@@ -80,7 +75,7 @@ void setTurnCommand(infant_planning::Velocity& cmd_vel,
 					float& target,
 					float& robo)
 {
-	float turn_angular = 0.1;
+	float turn_angular = 0.2;
 	float turn_dir = 1;
 	if(angle_diff(target, robo)>0) turn_dir=-1;
 	cmd_vel.op_linear = 0;
@@ -104,21 +99,7 @@ void commandDecision(	trajectory_generation::VelocityArray& v_a,
 	}
 	//cout<<"lin1 = "<<cmd_vel.op_linear<<"\tang1 = "<<cmd_vel.op_angular<<endl;
 }
-/*
-inline bool checkTF(tf::StampedTransform& transform, float& robot_yaw, tf::TransformListener& listener)
-{
-	try{
-		//listener.waitForTransform(header_frame, robot_frame, ros::Time(0), ros::Duration(1.0));
-	    listener.lookupTransform(header_frame, robot_frame, ros::Time(0), transform);
-        robot_yaw = tf::getYaw(transform.getRotation());
-		return true;
-	}
-	catch (tf::TransformException ex){
-		cout<<"waiting for global and robot frame relation"<<endl;
-		return false;
-	}
-}
-*/
+
 void JoyCallback(const sensor_msgs::JoyConstPtr& msg){
 	joy_flag = true;
 }
@@ -127,11 +108,6 @@ void CheatCallback(const knm_tiny_msgs::VelocityPtr& msg){
 	cheat_vel.op_linear = msg->op_linear;
 	cheat_vel.op_angular = msg->op_angular;
 	cheat_flag = true;
-}
-
-void NormalDistCallback(const std_msgs::Float64ConstPtr& msg)
-{
-	n_dist=msg->data;
 }
 
 void TargetCallback(const std_msgs::Float64ConstPtr& msg)
@@ -163,7 +139,6 @@ void IntersectionCallback(const std_msgs::BoolConstPtr& msg)
 {
 	if(msg->data){
 		intersection=true;
-	//	mode = 1;
 	}
 }
 
@@ -175,7 +150,6 @@ void MotionPlanner()
 	ros::Subscriber v_array_sub    = n.subscribe("/plan/velocity_array", 10, vArrayCallback);
 	ros::Subscriber target_sub        = n.subscribe("/target_yaw", 10, TargetCallback);
 	ros::Subscriber odom_sub        = n.subscribe("/lcl", 10, OdomCallback);
-	ros::Subscriber norm_dist_sub  = n.subscribe("/waypoint/normal_dist", 10, NormalDistCallback);
 	ros::Subscriber flag_sub = n.subscribe("/intersection_flag",1,IntersectionCallback);
 	
 	ros::Subscriber mode_sub = n.subscribe("/mode",1,ModeCallback);
@@ -184,15 +158,10 @@ void MotionPlanner()
 	
 	bool turn_flag = false;
 	int stop_count=0;
-	// float relative_ang=0;
 	infant_planning::Velocity cmd_vel;
-    tf::StampedTransform transform;
-    tf::TransformListener listener;
 
 	ros::Rate loop_rate(10);
 	while(ros::ok()){
-		//get robot position
-		//bool tf_flag = checkTF(transform, robot_yaw, listener);
 		if (!cheat_flag && target_flag && odom_flag){ //normal state
 			trajectory_generation::VelocityArray v_array; 
 			if (mode != 1){
@@ -221,8 +190,8 @@ void MotionPlanner()
 				cout<<"stop"<<endl;
 				setStopCommand(cmd_vel);
 			}
-			else if (intersection || turn_flag){
-				if(fabs(angle_diff(target,robot_yaw))>0.3){
+			else if (intersection || turn_flag || mode == 1){
+				if(fabs(angle_diff(target,robot_yaw))>THRESH_ANG){
 					cout<<"turn"<<endl;
 					setTurnCommand(cmd_vel, target, robot_yaw);
 					stop_count=0;
@@ -230,7 +199,8 @@ void MotionPlanner()
 				}else{
 					cout<<"turn end"<<endl;
 					intersection = false;
-					commandDecision(v_array, cmd_vel);
+					//commandDecision(v_array, cmd_vel);
+					setStopCommand(cmd_vel);
 					stop_count=0;
 					time_count=0;
 				}
@@ -261,8 +231,6 @@ void MotionPlanner()
 			cout<<"lin = "<<cmd_vel.op_linear<<"\tang = "<<cmd_vel.op_angular<<endl<<endl;
 			
 			//v_a_flag=false;
-			//t_wp_flag=false;
-			//tf_flag=false;
 			turn_flag=false;
 		}
 		else if (cheat_flag){
