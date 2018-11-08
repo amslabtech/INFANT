@@ -1,12 +1,11 @@
 <launch>
+	<!-- for bagplay -->
 	<param name="use_sim_time" value="true"/>
-	
 	<node pkg="rosbag" type="play" name="player" args="--clock /media/amsl/D8A80472A8045184/bagfiles/2018-11-04-17-03-15.bag -s 360"/>
-
+	<!-- rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find infant_recognition)/../config/tsukuba2018.rviz"/>
-	
+	<!-- tf	 -->
 	<node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
-
 	<!-- velodyne -->
     <include file="$(find velodyne_pointcloud)/launch/32e_points.launch"/>
     <node pkg="velodyne_height_map" type="rm_ground_node_minmax" name="rm_ground"/>
@@ -34,7 +33,7 @@
 	</node>
 
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
-	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
+	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store_lidar" output="screen"/>
 
 	<!-- zed -->
 	<node pkg="infant_recognition" type="grass2point" name="grass2grid"/>
@@ -49,5 +48,9 @@
 		<param name="target" type="string" value="localmap"/>
 	</node>
 	<node pkg="infant_recognition" type="occupancygrid_zed" name="occupancygrid_zed" output="screen"/>
+	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store_zed" output="screen">
+		<remap from="/occupancygrid/lidar" to="/occupancygrid/zed"/>
+		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/zed/stored"/>
+	</node>
 
 </launch>

@@ -51,9 +51,9 @@ void OccupancyGridStore::CallbackGrid(const nav_msgs::OccupancyGridConstPtr& msg
 		grid_all_minusone = *msg;
 		for(size_t i=0;i<grid_all_minusone.data.size();i++)	grid_all_minusone.data[i] = -1;
 	}
-	else{	
+	else{
 		for(size_t i=0;i<grid.data.size();i++){
-			if(grid.data[i]!=-1)	grid.data[i] = msg->data[i];
+			if(msg->data[i]!=-1)	grid.data[i] = msg->data[i];
 		}
 	}
 
@@ -70,6 +70,7 @@ void OccupancyGridStore::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
 	if(first_callback_odom)	dt = 0.0;
 
 	if(!first_callback_grid)	MoveCells(dt);
+	Publication();
 
 	first_callback_odom = false;
 }
