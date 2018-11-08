@@ -231,7 +231,7 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(40);
 	while(ros::ok()){
 		// if(lidar_flag && zed_flag){
-		if(!grid_lidar.data.empty() && !grid_zed.data.size()){
+		if(!grid_lidar.data.empty() && !grid_zed.data.empty()){
             combine();
 			if(time_moving>time_expand)	expand_obstacle(grid);
 			else	partial_expand_obstacle(grid);

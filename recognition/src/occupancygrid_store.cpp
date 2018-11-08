@@ -36,6 +36,8 @@ class OccupancyGridStore{
 
 OccupancyGridStore::OccupancyGridStore()
 {
+	std::cout << "CALLBACK GRID LIDAR" << std::endl;
+
 	sub_grid = nh.subscribe("/occupancygrid/lidar", 1, &OccupancyGridStore::CallbackGrid, this);
 	sub_odom = nh.subscribe("/tinypower/odom", 1, &OccupancyGridStore::CallbackOdom, this);
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar/stored",1);

@@ -28,7 +28,7 @@
 	</node>
 
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar"/>
-	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store"/>
+	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store_lidar"/>
 
 	<!-- zed -->
 	<node pkg="infant_recognition" type="grass2point" name="grass2grid"/>
