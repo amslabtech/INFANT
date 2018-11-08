@@ -26,6 +26,14 @@ void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 	grid_lidar = *msg;
     /* if(!lidar_flag){grid.info = grid_lidar.info;} */
     if(grid.data.empty()) grid = *msg;
+	
+	if(!lidar_flag){
+		if(!zed_flag){
+			grid_zed = *msg;
+			for(size_t i=0;i<grid_zed.data.size();i++)	grid_zed.data[i] = -1;
+		}
+	}
+
 	lidar_flag = true;
 }
 
@@ -35,6 +43,13 @@ void callback_grid_zed(const nav_msgs::OccupancyGridConstPtr& msg)
 	
 	grid_zed = *msg;
     if(grid.data.empty()) grid = *msg;
+	
+	if(!zed_flag){
+		if(!lidar_flag){
+			grid_lidar = *msg;
+			for(size_t i=0;i<grid_lidar.data.size();i++)	grid_lidar.data[i] = -1;
+		}
+	}
 	zed_flag = true;
 
 }
@@ -215,7 +230,8 @@ int main(int argc, char** argv)
 	/*loop*/
 	ros::Rate loop_rate(40);
 	while(ros::ok()){
-		if(lidar_flag && zed_flag){
+		// if(lidar_flag && zed_flag){
+		if(!grid_lidar.data.empty() && !grid_zed.data.size()){
             combine();
 			if(time_moving>time_expand)	expand_obstacle(grid);
 			else	partial_expand_obstacle(grid);

@@ -3,7 +3,7 @@
 	<node pkg="infant_recognition" type="tf_broadcaster" name="tf_broadcaster"/>
 
 	<!-- velodyne -->
-    <node pkg="velodyne_height_map" type="rm_ground_node_minmax" name="rm_ground"/>
+   <!-- <node pkg="velodyne_height_map" type="rm_ground_node_minmax" name="rm_ground"/> -->
 	
 	<node pkg="infant_recognition" type="pc_frameid_rename" name="pc_frameid_rename_ground2">
 		<remap from="/cloud" to="/ground2"/>

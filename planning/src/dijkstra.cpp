@@ -181,7 +181,8 @@ void GlobalPathCreator()
         rd++;
     }
 
-    ros::Rate loop_rate(10);
+    // ros::Rate loop_rate(10);
+    ros::Rate loop_rate(20);
     while(ros::ok()){
         if(start_dijkstra){
             start_cnt=0;
