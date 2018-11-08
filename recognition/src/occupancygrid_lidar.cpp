@@ -87,7 +87,8 @@ void input_grid(void)
 	// std::cout << "- INPUT GRID -" << std::endl;
 	// grid.header.frame_id = cloud->header.frame_id;
 	grid.header.frame_id = grid_frame_id;
-	const double threshold_intensity = 20;
+	// const double threshold_intensity = 20;
+	const double threshold_intensity = 30;
 	const double threshold_curvature = 1.0e-4;
 	const double threshold_fitting_error = 1.0e-10;
 
