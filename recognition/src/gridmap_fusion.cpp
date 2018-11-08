@@ -21,24 +21,26 @@ double time_moving = 0.0;
 
 void callback_grid_lidar(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	// std::cout << "- CALLBACK GRID -" << std::endl;
+	std::cout << "- CALLBACK GRID -" << std::endl;
 	
 	grid_lidar = *msg;
-    if(!lidar_flag){grid.info = grid_lidar.info;}
+    /* if(!lidar_flag){grid.info = grid_lidar.info;} */
+    if(grid.data.empty()) grid = *msg;
 	lidar_flag = true;
 }
 
 void callback_grid_zed(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	// std::cout << "- CALLBACK GRID -" << std::endl;
+	std::cout << "- CALLBACK GRID -" << std::endl;
 	
 	grid_zed = *msg;
+    if(grid.data.empty()) grid = *msg;
 	zed_flag = true;
 
 }
 int point_to_index(nav_msgs::OccupancyGrid grid, int x, int y)
 {
-	// std::cout << "- POINT TO INDEX -" << std::endl;
+	/* std::cout << "- POINT TO INDEX -" << std::endl; */
 	int x_ = x + grid.info.width/2.0;
 	int y_ = y + grid.info.height/2.0;
 	return	y_*grid.info.width + x_;
@@ -61,11 +63,12 @@ void shrink_obstacle(nav_msgs::OccupancyGrid& grid)
 }
 void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 {
-	// std::cout << "- CALLBACK ODOM -" << std::endl;
+	std::cout << "- CALLBACK ODOM -" << std::endl;
 	odom = *msg;
 	time_odom_now = ros::Time::now();
 	double dt = (time_odom_now - time_odom_last).toSec();
 	time_odom_last = time_odom_now;
+    if(!odom_flag)  dt = 0.0;
 	
 	if(odom.twist.twist.linear.x>1.0e-3){
 		nomove_time = 0.0;
@@ -78,7 +81,7 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	
 	const double time_shrink = 3.0;	//[s]
 	const double time_initialize = 5.0;	//[s]
-	if(!grid.data.empty()){
+	if(lidar_flag && zed_flag && !grid.data.empty()){
 		if(nomove_time>time_initialize || odom_flag){
 			initialize_around_startpoint();
 		}
@@ -102,12 +105,13 @@ void combine()
                 if(!grid_zed.data[i]){grid.data[i] = 0;}
                 break;
         }
+
     }
 }
 void index_to_point(nav_msgs::OccupancyGrid grid, int index, int& x, int& y)
 {
 	x = index%grid.info.width - grid.info.width/2.0;
-	y = index/grid.info.width - grid.info.height/2.0;
+	y = index/grid.info.width - grid.info.height/2.0;grid_lidar;
 	// std::cout << "index = " << index << std::endl;
 	// std::cout << "x = " << x << std::endl;
 	// std::cout << "y = " << y << std::endl;
@@ -164,7 +168,7 @@ void partial_expand_obstacle(nav_msgs::OccupancyGrid& grid)
 
 void ambiguity_filter(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensity
 {
-	// std::cout << "AMBIGUITY FILTER" << std::endl;
+	std::cout << "AMBIGUITY FILTER" << std::endl;
 	
 	std::vector<int> indices_obs;
 

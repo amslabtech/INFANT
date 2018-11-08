@@ -48,5 +48,5 @@
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/zed/stored"/>
 	</node>
 	<!-- combine -->
-	<node pkg="infant_recognition" type="gridmap_fusion" name="gridmap_fusion"/>
+	<node pkg="infant_recognition" type="gridmap_fusion" name="gridmap_fusion" output="screen"/>
 </launch>

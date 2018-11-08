@@ -69,8 +69,10 @@ void OccupancyGridStore::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
 	time_odom_last = time_odom_now;
 	if(first_callback_odom)	dt = 0.0;
 
-	if(!first_callback_grid)	MoveCells(dt);
-	Publication();
+	if(!first_callback_grid){
+        MoveCells(dt);
+	    Publication();
+    }
 
 	first_callback_odom = false;
 }
