@@ -49,4 +49,6 @@
 		<param name="target" type="string" value="localmap"/>
 	</node>
 	<node pkg="infant_recognition" type="occupancygrid_zed" name="occupancygrid_zed" output="screen"/>
+    
+    <node pkg="velodyne_height_map" type="rm_ground_node_minmax" name="rm_ground"/>
 </launch>

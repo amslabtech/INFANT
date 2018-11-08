@@ -137,7 +137,7 @@ void ambiguity_filter(nav_msgs::OccupancyGrid& grid)	//for ambiguity of intensit
 				}
 			}
 			int num_cells = (2*range + 1)*(2*range + 1);
-			const double ratio = 0.5;
+			const double ratio = 0.725;
 			double threshold = num_cells*ratio;
 			if(count_zerocell>threshold)	grid.data[i] = 0;
 			// if(count_zerocell>0)	std::cout << "count_zerocell = " << count_zerocell << std::endl;
@@ -260,7 +260,7 @@ void grid_update_zed(void)
 {
 	for(size_t i=0;i<grid_store.data.size();i++){
 		if(grid_store.data[i]==-1)	grid_store.data[i] = grid_zed.data[i];
-		else if(grid_store.data[i]==50 && grid_zed.data[i]==0)	grid_store.data[i] = 25;
+		else if(grid_store.data[i]==50 && grid_zed.data[i]==0)	grid_store.data[i] = 0;
 		else if(grid_store.data[i]==0 && grid_zed.data[i]==50)	grid_store.data[i] = 25;
 	}
 }

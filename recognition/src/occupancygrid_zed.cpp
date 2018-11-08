@@ -40,7 +40,7 @@ void index_to_point(int index, int& x, int& y)
 
 int point_to_index(int x, int y)
 {
-	// std::cout << "- POINT TO INDEX -" << std::endl;
+	std::cout << "- POINT TO INDEX -" << std::endl;
 	int x_ = x + grid.info.width/2.0;
 	int y_ = y + grid.info.height/2.0;
 	return	y_*grid.info.width + x_;
@@ -73,34 +73,41 @@ int meterpoint_to_index(double x, double y)
 	int x_ = x/grid.info.resolution + grid.info.width/2.0;
 	int y_ = y/grid.info.resolution + grid.info.height/2.0;
 	int index = y_*grid.info.width + x_;
-	return index;
+    return index;
 }
 
 bool point_is_inside(pcl::PointXYZ p)
 {
-	if(fabs(p.x)>w/2.0)	return false;
-	if(fabs(p.y)>h/2.0)	return false;
+	/* if(fabs(p.x)>w/2.0)	return false; */
+	/* if(fabs(p.y)>h/2.0)	return false; */
+	if(fabs(p.x)>=grid.info.width*grid.info.resolution/2.0)	return false;
+	if(fabs(p.y)>=grid.info.height*grid.info.resolution/2.0)	return false;
 	return true;
 }
 
 void input_grid(void)
 {
-	// std::cout << "- INPUT GRID -" << std::endl;
+	std::cout << "- INPUT GRID -" << std::endl;
 	grid.header.frame_id = cloud_grass->header.frame_id;
 
 	for(int i=0;i<grid.info.width*grid.info.height;i++)		grid.data[i] = -1;
+	std::cout << "- INPUT GRID 1-" << std::endl;
 
 	for(size_t i=0;i<cloud_grass->points.size();i++){
-		if(point_is_inside(cloud_grass->points[i]))	grid.data[meterpoint_to_index(cloud_grass->points[i].x, cloud_grass->points[i].y)] = 50;
+		if(point_is_inside(cloud_grass->points[i]) && !isnan(cloud_grass->points[i].x) && !isnan(cloud_grass->points[i].y)){
+            grid.data[meterpoint_to_index(cloud_grass->points[i].x, cloud_grass->points[i].y)] = 50;
+        }
 	}
+	std::cout << "- INPUT GRID 2-" << std::endl;
 	for(size_t i=0;i<cloud_road->points.size();i++){
-		if(point_is_inside(cloud_road->points[i]))	grid.data[meterpoint_to_index(cloud_road->points[i].x, cloud_road->points[i].y)] = 0;
+		if(point_is_inside(cloud_road->points[i]) && !isnan(cloud_road->points[i].x) && !isnan(cloud_road->points[i].y))	grid.data[meterpoint_to_index(cloud_road->points[i].x, cloud_road->points[i].y)] = 0;
 	}
+	std::cout << "- INPUT GRID 3-" << std::endl;
 }
 
 void callback_cloud_grass(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
-	// std::cout << "- CLOUD CALLBACK -" << std::endl;
+	std::cout << "- CLOUD GRASS CALLBACK -" << std::endl;
 	pcl::fromROSMsg(*msg, *cloud_grass);
 
 	// filter();
@@ -108,7 +115,7 @@ void callback_cloud_grass(const sensor_msgs::PointCloud2ConstPtr& msg)
 
 void callback_cloud_road(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
-	// std::cout << "- CLOUD CALLBACK -" << std::endl;
+	std::cout << "- CLOUD ROAD CALLBACK -" << std::endl;
 	pcl::fromROSMsg(*msg, *cloud_road);
 
 	// filter();
@@ -153,7 +160,7 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(2);
 	while(ros::ok()){
 		ros::spinOnce();
-		if(!cloud_grass->points.empty()){
+		if(!cloud_grass->points.empty() && !cloud_road->points.empty()){
 			input_grid();
 			pub_grid.publish(grid);
 		}
