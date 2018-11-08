@@ -43,6 +43,10 @@
 		<param name="target" type="string" value="localmap"/>
 	</node>
 	<node pkg="infant_recognition" type="occupancygrid_zed" name="occupancygrid_zed"/>
+	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store_zed" output="screen">
+		<remap from="/occupancygrid/lidar" to="/occupancygrid/zed"/>
+		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/zed/stored"/>
+	</node>
 	<!-- combine -->
 	<node pkg="infant_recognition" type="gridmap_fusion" name="gridmap_fusion"/>
 </launch>
