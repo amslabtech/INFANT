@@ -94,13 +94,13 @@ void input_grid(void)
 	std::cout << "- INPUT GRID 1-" << std::endl;
 
 	for(size_t i=0;i<cloud_grass->points.size();i++){
-		if(point_is_inside(cloud_grass->points[i]) && !isnan(cloud_grass->points[i].x) && !isnan(cloud_grass->points[i].y)){
+		if(point_is_inside(cloud_grass->points[i]) && !std::isnan(cloud_grass->points[i].x) && !std::isnan(cloud_grass->points[i].y)){
             grid.data[meterpoint_to_index(cloud_grass->points[i].x, cloud_grass->points[i].y)] = 50;
         }
 	}
 	std::cout << "- INPUT GRID 2-" << std::endl;
 	for(size_t i=0;i<cloud_road->points.size();i++){
-		if(point_is_inside(cloud_road->points[i]) && !isnan(cloud_road->points[i].x) && !isnan(cloud_road->points[i].y))	grid.data[meterpoint_to_index(cloud_road->points[i].x, cloud_road->points[i].y)] = 0;
+		if(point_is_inside(cloud_road->points[i]) && !std::isnan(cloud_road->points[i].x) && !std::isnan(cloud_road->points[i].y))	grid.data[meterpoint_to_index(cloud_road->points[i].x, cloud_road->points[i].y)] = 0;
 	}
 	std::cout << "- INPUT GRID 3-" << std::endl;
 }

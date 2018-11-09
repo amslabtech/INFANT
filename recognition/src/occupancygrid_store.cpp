@@ -23,11 +23,15 @@ class OccupancyGridStore{
 		/*time*/
 		ros::Time time_odom_now;
 		ros::Time time_odom_last;
+		double time_moving;
+		double time_nomove;
 	public:
 		OccupancyGridStore();
 		void CallbackGrid(const nav_msgs::OccupancyGridConstPtr& msg);
 		void CallbackOdom(const nav_msgs::OdometryConstPtr& msg);
 		void MoveCells(double dt);
+		void ClearObstacles(void);
+		int PointToIndex(nav_msgs::OccupancyGrid grid, int x, int y);
 		void IndexToMeterpoint(nav_msgs::OccupancyGrid grid, int index, double& x, double& y);
 		int MeterpointToIndex(nav_msgs::OccupancyGrid grid, double x, double y);
 		bool MeterPointIsInside(nav_msgs::OccupancyGrid grid, double x, double y);
@@ -70,11 +74,26 @@ void OccupancyGridStore::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
 	double dt = (time_odom_now - time_odom_last).toSec();
 	time_odom_last = time_odom_now;
 	if(first_callback_odom)	dt = 0.0;
+	
+	if(msg->twist.twist.linear.x>1.0e-3){
+		time_nomove = 0.0;
+		time_moving += dt;
+	}
+	else{
+		time_nomove += dt;
+		time_moving = 0.0;
+	}
 
-	if(!first_callback_grid){
+	if(!first_callback_grid && !grid.data.empty()){
         MoveCells(dt);
 	    Publication();
     }
+	
+	const double time_shrink = 3.0;	//[s]
+	const double time_clear = 5.0;	//[s]
+	if(!grid.data.empty()){
+		if(time_nomove>time_clear || first_callback_odom)	ClearObstacles();
+	}
 
 	first_callback_odom = false;
 }
@@ -106,6 +125,24 @@ void OccupancyGridStore::MoveCells(double dt)
 		grid = tmp_grid;
 	}
 
+}
+
+void OccupancyGridStore::ClearObstacles(void)
+{
+	const double range_meter = 2.0;	//[m]
+	int range_cell = range_meter/grid.info.resolution;
+	for(int i=-range_cell;i<=range_cell;i++){
+		for(int j=-range_cell;j<=range_cell;j++){
+			grid.data[PointToIndex(grid, i, j)] = 0;
+		}
+	}
+}
+
+int OccupancyGridStore::PointToIndex(nav_msgs::OccupancyGrid grid, int x, int y)
+{
+	int x_ = x + grid.info.width/2.0;
+	int y_ = y + grid.info.height/2.0;
+	return	y_*grid.info.width + x_;
 }
 
 void OccupancyGridStore::IndexToMeterpoint(nav_msgs::OccupancyGrid grid, int index, double& x, double& y)
