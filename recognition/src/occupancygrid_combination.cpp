@@ -40,7 +40,6 @@ class OccupancyGridCombination{
 		void AmbiguityFilter(void);
 		void ExpandObstacles(void);
 		void PartialExpandObstacle(void);
-		// void ClearObstacles(void);
 		void ShrinkObstacles(void);
 		int PointToIndex(nav_msgs::OccupancyGrid grid, int x, int y);
 		void IndexToPoint(nav_msgs::OccupancyGrid grid, int index, int& x, int& y);
@@ -106,18 +105,11 @@ void OccupancyGridCombination::CallbackOdom(const nav_msgs::OdometryConstPtr& ms
 
 	const double time_fullexpand = 3.0;	//[s]
 	const double time_shrink = 3.0;	//[s]
-	// const double time_clear = 5.0;	//[s]
 	if(!grid_lidar.data.empty() && !grid_zed.data.empty()){
 		CombineGrids();
 		AmbiguityFilter();
 		if(time_moving>time_fullexpand)	ExpandObstacles();
 		else if(time_nomove<time_shrink)	PartialExpandObstacle();
-	}
-	
-	if(!grid.data.empty()){
-		// if(time_nomove>time_clear || first_callback_odom)	ClearObstacles();
-		// else if(time_nomove>time_shrink)	ShrinkObstacles();
-		// if(time_nomove>time_shrink)	ShrinkObstacles();
 	}
 
 	if(!grid.data.empty())	Publication();
@@ -147,7 +139,7 @@ void OccupancyGridCombination::CombineGrids(void)
 	}
 }
 
-void OccupancyGridCombination::AmbiguityFilter(void)	//for ambiguity of intensity
+void OccupancyGridCombination::AmbiguityFilter(void)
 {
 	std::vector<int> indices_obs;
 
@@ -240,17 +232,6 @@ void OccupancyGridCombination::PartialExpandObstacle(void)
 		}
 	}
 }
-
-// void OccupancyGridCombination::ClearObstacles(void)
-// {
-// 	const double range_meter = 5.0;	//[m]
-// 	int range_cell = range_meter/grid.info.resolution;
-// 	for(int i=-range_cell;i<=range_cell;i++){
-// 		for(int j=-range_cell;j<=range_cell;j++){
-// 			grid.data[PointToIndex(grid, i, j)] = 0;
-// 		}
-// 	}
-// }
 
 void OccupancyGridCombination::ShrinkObstacles(void)
 {

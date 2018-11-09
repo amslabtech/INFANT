@@ -129,7 +129,7 @@ void OccupancyGridStore::MoveCells(double dt)
 
 void OccupancyGridStore::ClearObstacles(void)
 {
-	const double range_meter = 2.1;	//[m]
+	const double range_meter = 2.2;	//[m]
 	int range_cell = range_meter/grid.info.resolution;
 	for(int i=-range_cell;i<=range_cell;i++){
 		for(int j=-range_cell;j<=range_cell;j++){
