@@ -105,19 +105,19 @@ void OccupancyGridCombination::CallbackOdom(const nav_msgs::OdometryConstPtr& ms
 	}
 
 	const double time_fullexpand = 3.0;	//[s]
+	const double time_shrink = 3.0;	//[s]
+	// const double time_clear = 5.0;	//[s]
 	if(!grid_lidar.data.empty() && !grid_zed.data.empty()){
 		CombineGrids();
 		AmbiguityFilter();
 		if(time_moving>time_fullexpand)	ExpandObstacles();
-		else	PartialExpandObstacle();
+		else if(time_nomove<time_shrink)	PartialExpandObstacle();
 	}
 	
-	const double time_shrink = 3.0;	//[s]
-	const double time_clear = 5.0;	//[s]
 	if(!grid.data.empty()){
 		// if(time_nomove>time_clear || first_callback_odom)	ClearObstacles();
 		// else if(time_nomove>time_shrink)	ShrinkObstacles();
-		if(time_nomove>time_shrink)	ShrinkObstacles();
+		// if(time_nomove>time_shrink)	ShrinkObstacles();
 	}
 
 	if(!grid.data.empty())	Publication();
