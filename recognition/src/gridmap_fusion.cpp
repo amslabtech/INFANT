@@ -83,7 +83,7 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	time_odom_now = ros::Time::now();
 	double dt = (time_odom_now - time_odom_last).toSec();
 	time_odom_last = time_odom_now;
-    if(!odom_flag)  dt = 0.0;
+    if(odom_flag)  dt = 0.0;
 	
 	if(odom.twist.twist.linear.x>1.0e-3){
 		nomove_time = 0.0;
@@ -96,7 +96,7 @@ void callback_odom(const nav_msgs::OdometryConstPtr& msg)
 	
 	const double time_shrink = 3.0;	//[s]
 	const double time_initialize = 5.0;	//[s]
-	if(lidar_flag && zed_flag && !grid.data.empty()){
+	if(!grid.data.empty()){
 		if(nomove_time>time_initialize || odom_flag){
 			initialize_around_startpoint();
 		}
@@ -232,7 +232,8 @@ int main(int argc, char** argv)
 	while(ros::ok()){
 		// if(lidar_flag && zed_flag){
 		if(!grid_lidar.data.empty() && !grid_zed.data.empty()){
-            combine();
+			if(nomove_time>5.0)	initialize_around_startpoint();
+			else	combine();
 			if(time_moving>time_expand)	expand_obstacle(grid);
 			else	partial_expand_obstacle(grid);
 			ambiguity_filter(grid);

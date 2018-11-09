@@ -34,5 +34,6 @@
 	</node>
 
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
-    <node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
+    <!-- <node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/> -->
+    <node pkg="infant_recognition" type="occupancygrid_store_" name="occupancygrid_store_" output="screen"/>
 </launch>
