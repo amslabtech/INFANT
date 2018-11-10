@@ -107,7 +107,8 @@ void GlobalPathCreator()
     fp1=fopen("/home/amsl/ros_catkin_ws/src/mapping/latlng2xy/xy/xy_new.csv","r"); //ikuta
     //fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/xy_new.csv","r"); //ikuta
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_new.path","r");
-    fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_tsukuba.path","r");
+    // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_tsukuba.path","r");
+    fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_manu.path","r");
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_tmp.path","r");
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_park.path","r");
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra.path","r");
@@ -261,6 +262,12 @@ void GlobalPathCreator()
                     }
                     Dijkstra[kari_detection][2]=1;
                     target=kari_detection;
+					cout << "-----------------------------------------------" << endl;
+					cout << target << endl;
+					cout << dijkstra_cnt << endl;
+					cout << route_node[dijkstra_cnt+1] << endl;
+					cout << Dijkstra[route_node[dijkstra_cnt+1]][2] << endl;
+					cout << "-----------------------------------------------" << endl;
                     if(Dijkstra[route_node[dijkstra_cnt+1]][2]==1){//goalが確定したら                   
                         cout<<"goal"<<endl;
                         break;

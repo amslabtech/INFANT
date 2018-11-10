@@ -129,7 +129,7 @@ void OccupancyGridStore::MoveCells(double dt)
 
 void OccupancyGridStore::ClearObstacles(void)
 {
-	const double range_meter = 2.2;	//[m]
+	const double range_meter = 2.3;	//[m]
 	int range_cell = range_meter/grid.info.resolution;
 	for(int i=-range_cell;i<=range_cell;i++){
 		for(int j=-range_cell;j<=range_cell;j++){
@@ -175,6 +175,7 @@ void OccupancyGridStore::Publication(void)
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "occupancygrid_store");
+	std::cout << "= occupancygrid_store =" << std::endl;
 
 	OccupancyGridStore occupancygrid_store;
 

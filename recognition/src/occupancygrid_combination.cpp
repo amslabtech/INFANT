@@ -243,7 +243,7 @@ void OccupancyGridCombination::PartialExpandObstacle(void)
 				if(dist>range_no_expand){
 					for(int j=-range;j<=range;j++){
 						for(int k=-range;k<=range;k++){
-							if(CellIsInside(grid, x+j, y+k) && grid.data[PointToIndex(grid, x+j, y+k)]<99)	grid.data[PointToIndex(grid, x+j, y+k)] = grid.data[i]-1;
+							if(CellIsInside(grid, x+j, y+k) && grid.data[PointToIndex(grid, x+j, y+k)]!=grid.data[i] && grid.data[PointToIndex(grid, x+j, y+k)]<99)	grid.data[PointToIndex(grid, x+j, y+k)] = grid.data[i]-1;
 						}
 					}
 				}
@@ -292,7 +292,8 @@ void OccupancyGridCombination::Publication(void)
 
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "occupancygrid_combine");
+	ros::init(argc, argv, "occupancygrid_combination");
+	std::cout << "= occupancygrid_combination =" << std::endl;
 
 	OccupancyGridCombination occupancygrid_combine;
 
