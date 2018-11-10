@@ -105,8 +105,14 @@ void OccupancyGridCombination::CallbackOdom(const nav_msgs::OdometryConstPtr& ms
 
 	const double time_fullexpand = 3.0;	//[s]
 	const double time_shrink = 3.0;	//[s]
+	const double threshold_delay_zed = 10.0;	//[s]
+	double delay_zed = (ros::Time::now() - grid_zed.header.stamp).toSec();
 	if(!grid_lidar.data.empty() && !grid_zed.data.empty()){
-		CombineGrids();
+		if(delay_zed>threshold_delay_zed){
+			grid = grid_lidar;
+			std::cout << "zed delay is too large(" << delay_zed << "[s])" << std::endl;
+		}
+		else	CombineGrids();
 		AmbiguityFilter();
 		if(time_moving>time_fullexpand)	ExpandObstacles();
 		else if(time_nomove<time_shrink)	PartialExpandObstacle();
@@ -133,9 +139,22 @@ void OccupancyGridCombination::CallbackNode(const std_msgs::Int16MultiArrayConst
 
 void OccupancyGridCombination::CombineGrids(void)
 {
-	for(size_t i=0;i<grid.data.size();i++){
-		if(grid_lidar.data[i]!=-1)	grid.data[i] = grid_lidar.data[i];
-		if(grid_lidar.data[i]==50 && grid_zed.data[i]==0)	grid.data[i] = grid_zed.data[i];
+	const bool zed_has_higher_priority = true;
+	if(zed_has_higher_priority){
+		for(size_t i=0;i<grid.data.size();i++){
+			if(grid_lidar.data[i]==100)	grid.data[i] = grid_lidar.data[i];
+			else if(grid_zed.data[i]!=-1)	grid.data[i] = grid_zed.data[i];
+			else if(grid_lidar.data[i]!=-1)	grid.data[i] = grid_lidar.data[i];
+		}
+	}
+	/*equal priority*/
+	else{
+		for(size_t i=0;i<grid.data.size();i++){
+			if(grid_lidar.data[i]==100)	grid.data[i] = grid_lidar.data[i];
+			else if(grid_lidar.data[i]==0 || grid_zed.data[i]==0)	grid.data[i] = 0;
+			else if(grid_lidar.data[i]!=-1)	grid.data[i] = grid_lidar.data[i];
+			else if(grid_zed.data[i]!=-1)	grid.data[i] = grid_zed.data[i];
+		}
 	}
 }
 

@@ -25,7 +25,7 @@ const float Vmax=0.9;
 const float ANGULARmax=1.0; 
 const float ANGULARmin=0.1;
 const int MaxStop=40; //4[s]
-const float THRESH_ANG=0.26; //15[deg]
+const float THRESH_ANG=0.17; //10[deg]
 
 ros::Publisher vel_pub;
 int time_count=0;
@@ -164,7 +164,7 @@ void MotionPlanner()
 	while(ros::ok()){
 		if (!cheat_flag && target_flag && odom_flag){ //normal state
 			trajectory_generation::VelocityArray v_array; 
-			if (mode != 1){
+			//if (mode != 1){
 				if (v_a_flag){
 					boost::mutex::scoped_lock(v_array_mutex_);
 					v_array = g_v_array;
@@ -183,7 +183,7 @@ void MotionPlanner()
 					stop_count++;
 					cout<< "stop_count" << stop_count <<endl;
 				}
-			}
+			//}
 		
 			// set velocity and angular //
 			if (mode == 3){
