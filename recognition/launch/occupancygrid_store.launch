@@ -4,7 +4,7 @@
 	<!-- <node pkg="rosbag" type="play" name="player" args="- -clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -s 250"/> -->
     <!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;10&#45;01&#45;21&#45;47&#45;44.bag &#45;s 0"/> -->
 	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /media/amsl/D8A80472A8045184/bagfiles/2018&#45;10&#45;13&#45;13&#45;23&#45;54.bag &#45;s 0"/> -->
-	<node pkg="rosbag" type="play" name="player" args="--clock /media/amsl/D8A80472A8045184/bagfiles/2018-11-04-17-03-15.bag -s 360"/>
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/bagfiles/2018-11-11-17-50-56.bag"/>
 
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find infant_recognition)/../config/tsukuba2018.rviz"/>
     
@@ -45,7 +45,7 @@
 	</node>
 
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
-    <node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
+    <node pkg="infant_recognition" type="occupancygrid_store_" name="occupancygrid_store_" output="screen"/>
 
 	<node pkg="velodyne_height_map" type="rm_ground_node_minmax" name="rm_ground"/>
 

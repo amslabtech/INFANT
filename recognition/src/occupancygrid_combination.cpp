@@ -125,16 +125,19 @@ void OccupancyGridCombination::CallbackOdom(const nav_msgs::OdometryConstPtr& ms
 
 void OccupancyGridCombination::CallbackNode(const std_msgs::Int16MultiArrayConstPtr& msg)
 {
-	size_t count = 0;
-	for(size_t i=0;i<nodes_park.size();i++){
-		if(msg->data[0]==nodes_park[i]){
-			expand_grass = true;
-			std::cout << "robot is in the park " << std::endl;
-			break;
-		}
-		count++;
-	}
-	if(count==nodes_park.size())	expand_grass = false;
+	// size_t count = 0;
+	// for(size_t i=0;i<nodes_park.size();i++){
+	// 	if(msg->data[0]==nodes_park[i]){
+	// 		expand_grass = true;
+	// 		std::cout << "robot is in the park " << std::endl;
+	// 		break;
+	// 	}
+	// 	count++;
+	// }
+	// if(count==nodes_park.size())	expand_grass = false;
+	
+	if((msg->data[0]>=18 && msg->data[0]<=37) || msg->data[0]==62 || msg->data[0]==65)	expand_grass = true;
+	else	expand_grass = false;
 }
 
 void OccupancyGridCombination::CombineGrids(void)

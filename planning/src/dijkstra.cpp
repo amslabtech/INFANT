@@ -107,8 +107,8 @@ void GlobalPathCreator()
     fp1=fopen("/home/amsl/ros_catkin_ws/src/mapping/latlng2xy/xy/xy_new.csv","r"); //ikuta
     //fp1=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/xy_new.csv","r"); //ikuta
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_new.path","r");
-    // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_tsukuba.path","r");
-    fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_manu.path","r");
+    fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_tsukuba.path","r");
+    // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_manu.path","r");
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_tmp.path","r");
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra_park.path","r");
     // fp2=fopen("/home/amsl/ros_catkin_ws/src/INFANT/planning/src/dijkstra.path","r");

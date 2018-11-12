@@ -36,8 +36,8 @@
     <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
 
 	<!-- vesion1 -->
-	<!-- <node pkg="infant_recognition" type="occupancygrid_store_" name="occupancygrid_store_" output="screen"/> -->
+	<node pkg="infant_recognition" type="occupancygrid_store_" name="occupancygrid_store_" output="screen"/>
 	<!-- vesion2 -->
-	<node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/>
-	<node pkg="infant_recognition" type="occupancygrid_combination" name="occupancygrid_combination" output="screen"/>
+	<!-- <node pkg="infant_recognition" type="occupancygrid_store" name="occupancygrid_store" output="screen"/> -->
+	<!-- <node pkg="infant_recognition" type="occupancygrid_combination" name="occupancygrid_combination" output="screen"/> -->
 </launch>
