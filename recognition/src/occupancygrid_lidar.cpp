@@ -258,7 +258,7 @@ void callback_cloud_ground(const sensor_msgs::PointCloud2ConstPtr& msg)
 	}
 	cloud_ground = tmp_cloud_ground;
 
-	normal_estimation();
+	// normal_estimation();
 }
 
 void grid_initialization(void)
