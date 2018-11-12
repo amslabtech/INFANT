@@ -98,8 +98,9 @@ void input_grid(void)
 
 	for(size_t i=0;i<cloud_ground->points.size();i++){
 		/*intensity*/
-		if(cloud_ground->points[i].intensity<threshold_intensity)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 0;
-		else	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 50;
+		if(cloud_ground->points[i].curvature>threshold_curvature)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 50;
+		else if(cloud_ground->points[i].intensity>threshold_intensity)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 50;
+		else	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 0;
 		
 		/*curvature*/
 		// if(cloud_ground->points[i].curvature<threshold_curvature)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 0;
@@ -256,6 +257,8 @@ void callback_cloud_ground(const sensor_msgs::PointCloud2ConstPtr& msg)
 			tmp_cloud_ground->points.push_back(cloud_ground->points[i]);
 	}
 	cloud_ground = tmp_cloud_ground;
+
+	normal_estimation();
 }
 
 void grid_initialization(void)
