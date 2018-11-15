@@ -4,8 +4,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-// #include <pcl/filters/passthrough.h>
-#include <pcl/filters/crop_box.h>
+#include <pcl/filters/passthrough.h>
+// #include <pcl/filters/crop_box.h>
 #include <pcl/features/normal_3d.h>
 #include <tf/tf.h>
 
@@ -73,11 +73,16 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 {
 	pcl::fromROSMsg(*msg, *rmground);
 	
-	pcl::CropBox<pcl::PointXYZI> boxFilter;
-	boxFilter.setMin(Eigen::Vector4f(-w/2.0, -h/2.0, -1000, 1.0));
-	boxFilter.setMax(Eigen::Vector4f(w/2.0, h/2.0, 1000, 1.0));
-	boxFilter.setInputCloud(rmground);
-	boxFilter.filter(*rmground);
+	// pcl::CropBox<pcl::PointXYZI> boxFilter;
+	// boxFilter.setMin(Eigen::Vector4f(-w/2.0, -h/2.0, -1000, 1.0));
+	// boxFilter.setMax(Eigen::Vector4f(w/2.0, h/2.0, 1000, 1.0));
+	// boxFilter.setInputCloud(rmground);
+	// boxFilter.filter(*rmground);
+	pcl::PassThrough<pcl::PointXYZI> pass;
+	pass.setInputCloud(rmground);
+	pass.setFilterFieldName("x");
+	pass.setFilterLimits(-w/2.0, w/2.0);
+	pass.filter (*rmground);
 
 	pub_frameid = msg->header.frame_id;
 	pub_stamp = msg->header.stamp;
@@ -91,11 +96,16 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
 	pcl::fromROSMsg(*msg, *tmp_pc);
 	
-	pcl::CropBox<pcl::PointXYZI> boxFilter;
-	boxFilter.setMin(Eigen::Vector4f(-w/2.0, -h/2.0, -1000, 1.0));
-	boxFilter.setMax(Eigen::Vector4f(w/2.0, h/2.0, 1000, 1.0));
-	boxFilter.setInputCloud(tmp_pc);
-	boxFilter.filter(*tmp_pc);
+	// pcl::CropBox<pcl::PointXYZI> boxFilter;
+	// boxFilter.setMin(Eigen::Vector4f(-w/2.0, -h/2.0, -1000, 1.0));
+	// boxFilter.setMax(Eigen::Vector4f(w/2.0, h/2.0, 1000, 1.0));
+	// boxFilter.setInputCloud(tmp_pc);
+	// boxFilter.filter(*tmp_pc);
+	pcl::PassThrough<pcl::PointXYZI> pass;
+	pass.setInputCloud(tmp_pc);
+	pass.setFilterFieldName("x");
+	pass.setFilterLimits(-w/2.0, w/2.0);
+	pass.filter (*tmp_pc);
 	
 	pcl::copyPointCloud(*tmp_pc, *ground);
 
