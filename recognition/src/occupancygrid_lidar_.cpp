@@ -1,142 +1,80 @@
+/*
+ *	occupancygrid_lidar.cpp
+ */
+
 #include <ros/ros.h>
+#include <tf/transform_listener.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <nav_msgs/OccupancyGrid.h>
-#include <pcl/point_cloud.h>
+#include <sensor_msgs/point_cloud_conversion.h>
 #include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl/filters/passthrough.h>
-// #include <pcl/filters/crop_box.h>
 #include <pcl/features/normal_3d.h>
-#include <tf/tf.h>
+#include <nav_msgs/OccupancyGrid.h>
 
-class OccupancyGridLidar{
-	private:
-		ros::NodeHandle nh;
-		/*subscribe*/
-		ros::Subscriber sub_rmground;
-		ros::Subscriber sub_ground;
-		/*publish*/
-		ros::Publisher pub;
-		/*cloud*/
-		pcl::PointCloud<pcl::PointXYZI>::Ptr rmground {new pcl::PointCloud<pcl::PointXYZI>};
-		pcl::PointCloud<pcl::PointXYZINormal>::Ptr ground {new pcl::PointCloud<pcl::PointXYZINormal>};
-		/*grid*/
-		nav_msgs::OccupancyGrid grid;
-		nav_msgs::OccupancyGrid grid_all_minusone;
-		/*publish infomations*/
-		std::string pub_frameid;
-		ros::Time pub_stamp;
-		/*const values*/
-		const double w = 20.0;	//x[m]
-		const double h = 20.0;	//y[m]
-		const double resolution = 0.2;	//[m]
-		const double threshold_curvature = 0.1;
-		const double range_road_intensity[2] = {5, 15};
-	public:
-		OccupancyGridLidar();
-		void GridInitialization(void);
-		void CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr& msg);
-		void CallbackGround(const sensor_msgs::PointCloud2ConstPtr& msg);
-		void NormalEstimation(void);
-		void InputGrid(void);
-		int MeterpointToIndex(double x, double y);
-		void Publication(void);
-};
+/*global variables*/
+pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_ground (new pcl::PointCloud<pcl::PointXYZINormal>);
+nav_msgs::OccupancyGrid grid;
+const double w = 20.0;	//x[m]
+const double h = 20.0;	//y[m]
+const double resolution = 0.2;	//[m]
+// std::vector<double> fitting_errors;
+std::string grid_frame_id;
 
-OccupancyGridLidar::OccupancyGridLidar()
+bool cell_is_inside(int x, int y)
 {
-	sub_rmground = nh.subscribe("/rm_ground2/renamed_frame/transformed", 1, &OccupancyGridLidar::CallbackRmGround, this);
-	sub_ground = nh.subscribe("/ground2/renamed_frame/transformed", 1, &OccupancyGridLidar::CallbackGround, this);
-	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
-	GridInitialization();
+	int w = grid.info.width;
+	int h = grid.info.height;
+	if(x<-w/2.0)  return false; 
+	if(x>w/2.0-1) return false;
+	if(y<-h/2.0)  return false;
+	if(y>h/2.0-1) return false;
+	return true;
 }
 
-void OccupancyGridLidar::GridInitialization(void)
+void index_to_point(int index, int& x, int& y)
 {
-	grid.info.resolution = resolution;
-	grid.info.width = w/resolution + 1;
-	grid.info.height = h/resolution + 1;
-	grid.info.origin.position.x = -w/2.0;
-	grid.info.origin.position.y = -h/2.0;
-	grid.info.origin.position.z = 0.0;
-	grid.info.origin.orientation.x = 0.0;
-	grid.info.origin.orientation.y = 0.0;
-	grid.info.origin.orientation.z = 0.0;
-	grid.info.origin.orientation.w = 1.0;
-	for(int i=0;i<grid.info.width*grid.info.height;i++)	grid.data.push_back(-1);
-	// frame_id is same as the one of subscribed pc
-	
-	grid_all_minusone = grid;
+	x = index%grid.info.width - grid.info.width/2.0;
+	y = index/grid.info.width - grid.info.height/2.0;
+	// std::cout << "index = " << index << std::endl;
+	// std::cout << "x = " << x << std::endl;
+	// std::cout << "y = " << y << std::endl;
 }
 
-void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr &msg)
+int point_to_index(int x, int y)
 {
-	pcl::fromROSMsg(*msg, *rmground);
-	
-	// pcl::CropBox<pcl::PointXYZI> boxFilter;
-	// boxFilter.setMin(Eigen::Vector4f(-w/2.0, -h/2.0, -1000, 1.0));
-	// boxFilter.setMax(Eigen::Vector4f(w/2.0, h/2.0, 1000, 1.0));
-	// boxFilter.setInputCloud(rmground);
-	// boxFilter.filter(*rmground);
-	pcl::PassThrough<pcl::PointXYZI> pass;
-	pass.setInputCloud(rmground);
-	pass.setFilterFieldName("x");
-	pass.setFilterLimits(-w/2.0, w/2.0);
-	pass.filter (*rmground);
-
-	pub_frameid = msg->header.frame_id;
-	pub_stamp = msg->header.stamp;
-
-	InputGrid();
-	Publication();
+	// std::cout << "- POINT TO INDEX -" << std::endl;
+	int x_ = x + grid.info.width/2.0;
+	int y_ = y + grid.info.height/2.0;
+	return	y_*grid.info.width + x_;
 }
 
-void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &msg)
+
+void filter(void)
 {
-	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
-	pcl::fromROSMsg(*msg, *tmp_pc);
-	
-	// pcl::CropBox<pcl::PointXYZI> boxFilter;
-	// boxFilter.setMin(Eigen::Vector4f(-w/2.0, -h/2.0, -1000, 1.0));
-	// boxFilter.setMax(Eigen::Vector4f(w/2.0, h/2.0, 1000, 1.0));
-	// boxFilter.setInputCloud(tmp_pc);
-	// boxFilter.filter(*tmp_pc);
-	pcl::PassThrough<pcl::PointXYZI> pass;
-	pass.setInputCloud(tmp_pc);
-	pass.setFilterFieldName("x");
-	pass.setFilterLimits(-w/2.0, w/2.0);
-	pass.filter (*tmp_pc);
-	
-	pcl::copyPointCloud(*tmp_pc, *ground);
-
-	NormalEstimation();
-}
-
-void OccupancyGridLidar::NormalEstimation(void)
-{
-	pcl::NormalEstimation<pcl::PointXYZINormal, pcl::PointXYZINormal> ne;
-	ne.setInputCloud (ground);
-	pcl::search::KdTree<pcl::PointXYZINormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZINormal> ());
-	ne.setSearchMethod(tree);
-	ne.setRadiusSearch(0.1);
-	ne.compute(*ground);
-}
-
-void OccupancyGridLidar::InputGrid(void)
-{
-	grid = grid_all_minusone;
-
-	for(size_t i=0;i<ground->points.size();i++){
-		if(ground->points[i].curvature>threshold_curvature)	grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 50;
-		else if(ground->points[i].intensity<range_road_intensity[0] || ground->points[i].intensity>range_road_intensity[1])	grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 50;
-		else	grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
-	}
-	for(size_t i=0;i<rmground->points.size();i++){
-		grid.data[MeterpointToIndex(rmground->points[i].x, rmground->points[i].y)] = 100;
+	const int range = 1;
+	for(int i=0;i<grid.info.width*grid.info.height;i++){
+		if(grid.data[i]==-1){
+			// std::cout << "-----" << std::endl;
+			int x, y;
+			index_to_point(i, x, y);
+			int count_roadcell = 0;
+			for(int j=-range;j<=range;j++){
+				for(int k=-range;k<=range;k++){
+					if(cell_is_inside(x+j, y+k) && grid.data[point_to_index(x+j, y+k)]==0)	count_roadcell++;
+				}
+			}
+			if(count_roadcell>(2*range+1)*(2*range+1)-1){
+				// std::cout << "Grid is updated" << std::endl;
+				grid.data[i] = 0;
+			}
+		}
 	}
 }
 
-int OccupancyGridLidar::MeterpointToIndex(double x, double y)
+int meterpoint_to_index(double x, double y)
 {
 	int x_ = x/grid.info.resolution + grid.info.width/2.0;
 	int y_ = y/grid.info.resolution + grid.info.height/2.0;
@@ -144,18 +82,243 @@ int OccupancyGridLidar::MeterpointToIndex(double x, double y)
 	return index;
 }
 
-void OccupancyGridLidar::Publication(void)
+void input_grid(void)
 {
-	grid.header.frame_id = pub_frameid;
-	grid.header.stamp = pub_stamp;
-	pub.publish(grid);
+	// std::cout << "- INPUT GRID -" << std::endl;
+	// grid.header.frame_id = cloud->header.frame_id;
+	grid.header.frame_id = grid_frame_id;
+	const double threshold_intensity = 25;
+	// const double threshold_intensity = 20;	//sunny?
+	// const double threshold_intensity = 30;	//cloudy?
+	const double threshold_curvature = 1.0e-4;
+	const double threshold_fitting_error = 1.0e-10;
+
+
+	for(int i=0;i<grid.info.width*grid.info.height;i++)		grid.data[i] = -1;
+
+	for(size_t i=0;i<cloud_ground->points.size();i++){
+		/*intensity*/
+		if(cloud_ground->points[i].curvature>threshold_curvature)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 50;
+		else if(cloud_ground->points[i].intensity>threshold_intensity)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 50;
+		else	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 0;
+		
+		/*curvature*/
+		// if(cloud_ground->points[i].curvature<threshold_curvature)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 0;
+		// else	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 50;
+		// std::cout << "cloud_ground->points[i].curvature = " << cloud_ground->points[i].curvature << std::endl;
+		
+		/*fitting_error*/
+	// 	if(fitting_errors[i]<threshold_fitting_error)	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 0;
+	// 	else	grid.data[meterpoint_to_index(cloud_ground->points[i].x, cloud_ground->points[i].y)] = 50;
+	}
+	for(size_t i=0;i<cloud_obstacles->points.size();i++){
+		grid.data[meterpoint_to_index(cloud_obstacles->points[i].x, cloud_obstacles->points[i].y)] = 100;
+		// std::cout << "cloud_obstacles " << i << ":" << cloud_obstacles->points[i] << std::endl;
+	}
+}
+
+// double compute_fitting_error(Eigen::Vector4f plane_parameters, pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud, std::vector<int> indices)
+// {
+// 	float sum_square_error = 0.0;
+// 	for(int i=0;i<indices.size();i++){
+// 		float square_error =	(plane_parameters[0]*cloud->points[indices[i]].x
+// 								+plane_parameters[1]*cloud->points[indices[i]].y
+// 								+plane_parameters[2]*cloud->points[indices[i]].z
+// 								+plane_parameters[3])
+// 								*(plane_parameters[0]*cloud->points[indices[i]].x
+// 								+plane_parameters[1]*cloud->points[indices[i]].y
+// 								+plane_parameters[2]*cloud->points[indices[i]].z
+// 								+plane_parameters[3])
+// 								/(plane_parameters[0]*plane_parameters[0]
+// 								+plane_parameters[1]*plane_parameters[1]
+// 								+plane_parameters[2]*plane_parameters[2]);
+// 		sum_square_error += square_error/(float)indices.size();
+// 	}
+// 	return sum_square_error;
+// }
+//
+// std::vector<int> kdtree_search(pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud, pcl::PointXYZINormal searchpoint, double search_radius)
+// {
+// 	pcl::KdTreeFLANN<pcl::PointXYZINormal> kdtree;
+// 	kdtree.setInputCloud(cloud);
+// 	std::vector<int> pointIdxRadiusSearch;
+// 	std::vector<float> pointRadiusSquaredDistance;
+// 	if(kdtree.radiusSearch(searchpoint, search_radius, pointIdxRadiusSearch, pointRadiusSquaredDistance)<=0)	std::cout << "kdtree error" << std::endl;
+// 	return pointIdxRadiusSearch; 
+// }
+//
+// void normal_estimation_(void)
+// {
+// 	fitting_errors.clear();
+// 	for(size_t i=0;i<cloud_ground->points.size();i+=10){
+// 		const double search_radius = 0.1;
+// 		std::vector<int> indices = kdtree_search(cloud_ground, cloud_ground->points[i], search_radius);
+// 		// pcl::computePointNormal(*cloud_ground, indices, plane_parameters, curvature);
+// 		Eigen::Vector4f plane_parameters;
+// 		pcl::computePointNormal(*cloud_ground, indices, plane_parameters, cloud_ground->points[i].curvature);
+// 		cloud_ground->points[i].normal_x = plane_parameters[0];
+// 		cloud_ground->points[i].normal_y = plane_parameters[1];
+// 		cloud_ground->points[i].normal_z = plane_parameters[2];
+// 		fitting_errors.push_back( compute_fitting_error(plane_parameters, cloud_ground, indices) );
+// 	}
+// }
+
+void normal_estimation(void)
+{
+	pcl::NormalEstimation<pcl::PointXYZINormal, pcl::PointXYZINormal> ne;
+	ne.setInputCloud (cloud_ground);
+	pcl::search::KdTree<pcl::PointXYZINormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZINormal> ());
+	ne.setSearchMethod (tree);
+	ne.setRadiusSearch (0.1);
+	ne.compute (*cloud_ground);
+}
+
+bool point_is_obstacle(pcl::PointXYZI p)
+{
+	const double height_min = -1.24;
+	const double height_max = 0.0;
+	if(p.z<height_min)	return false;
+	if(p.z>height_max)	return false;
+	if(fabs(p.x)>w/2.0)	return false;
+	if(fabs(p.y)>h/2.0)	return false;
+	return true;
+}
+
+bool point_is_ground(pcl::PointXYZI p)
+{
+	const double height_min = -2.0;
+	const double height_max = -1.24;
+	if(p.z<height_min)	return false;
+	if(p.z>height_max)	return false;
+	if(fabs(p.x)>w/2.0)	return false;
+	if(fabs(p.y)>h/2.0)	return false;
+	return true;
+}
+
+void cloud_extraction(void)	//extraction
+{
+	// std::cout << "- CLOUD EXTRACTION -" << std::endl;
+	
+	// cloud_obstacles->points.clear();
+	// cloud_ground->points.clear();
+	
+	// pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
+	pcl::PointCloud<pcl::PointXYZINormal>::Ptr tmp_cloud_ground (new pcl::PointCloud<pcl::PointXYZINormal>);
+	
+	for(size_t i=0;i<cloud->points.size();i++){
+		// if(point_is_obstacle(cloud->points[i]))	tmp_cloud_obstacles->points.push_back(cloud->points[i]);
+		if(point_is_ground(cloud->points[i])){
+			pcl::PointXYZINormal tmp;
+			tmp.x = cloud->points[i].x;
+			tmp.y = cloud->points[i].y;
+			tmp.z = cloud->points[i].z;
+			tmp.intensity = cloud->points[i].intensity;
+			tmp_cloud_ground->points.push_back(tmp);
+		}
+	}
+	// *cloud_obstacles = *tmp_cloud_obstacles;
+	*cloud_ground = *tmp_cloud_ground;
+}
+
+void callback_cloud(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+	// std::cout << "- CLOUD CALLBACK -" << std::endl;
+	pcl::fromROSMsg(*msg, *cloud);
+	grid_frame_id = msg->header.frame_id;
+
+	cloud_extraction();
+	// normal_estimation();
+	// normal_estimation_();
+	// input_grid();
+	// filter();
+}
+
+void callback_cloud_rmground(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+	pcl::fromROSMsg(*msg, *cloud_obstacles);
+	grid_frame_id = msg->header.frame_id;
+	
+	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud_obstacles (new pcl::PointCloud<pcl::PointXYZI>);
+	for(size_t i=0;i<cloud_obstacles->points.size();i++){
+		if(fabs(cloud_obstacles->points[i].x)<w/2.0 && fabs(cloud_obstacles->points[i].y)<h/2.0)
+			tmp_cloud_obstacles->points.push_back(cloud_obstacles->points[i]);
+	}
+	cloud_obstacles = tmp_cloud_obstacles;
+}
+
+void callback_cloud_ground(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+	pcl::fromROSMsg(*msg, *cloud_ground);
+	grid_frame_id = msg->header.frame_id;
+	
+	pcl::PointCloud<pcl::PointXYZINormal>::Ptr tmp_cloud_ground (new pcl::PointCloud<pcl::PointXYZINormal>);
+	for(size_t i=0;i<cloud_ground->points.size();i++){
+		if(fabs(cloud_ground->points[i].x)<w/2.0 && fabs(cloud_ground->points[i].y)<h/2.0)
+			tmp_cloud_ground->points.push_back(cloud_ground->points[i]);
+	}
+	cloud_ground = tmp_cloud_ground;
+
+	// normal_estimation();
+}
+
+void grid_initialization(void)
+{
+	// grid.header.frame_id = "/localmap";
+	// grid.header.frame_id = "/velodyne";
+	grid.info.resolution = resolution;
+	grid.info.width = w/grid.info.resolution + 1;
+	grid.info.height = h/grid.info.resolution + 1;
+	grid.info.origin.position.x = -w/2.0;
+	grid.info.origin.position.y = -h/2.0;
+	grid.info.origin.position.z = 0.0;
+	grid.info.origin.orientation.x = 0.0;
+	grid.info.origin.orientation.y = 0.0;
+	grid.info.origin.orientation.z = 0.0;
+	grid.info.origin.orientation.w = 1.0;
+	
+	for(int i=0;i<grid.info.width*grid.info.height;i++)	grid.data.push_back(-1);
 }
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "pc_store");
-	
-	OccupancyGridLidar occupancygrid_lidar;
+	ros::init(argc, argv, "occupancygrid_lidar");
+	ros::NodeHandle nh;
 
-	ros::spin();
+	/*sub*/
+	// ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points/renamed_frame/transformed", 1, callback_cloud);
+	ros::Subscriber sub_cloud_ground = nh.subscribe("/ground2/renamed_frame/transformed", 1, callback_cloud_ground);
+	ros::Subscriber sub_cloud_rmground = nh.subscribe("/rm_ground2/renamed_frame/transformed", 1, callback_cloud_rmground);
+	// ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points", 1, callback_cloud);
+	
+	/*pub*/
+	ros::Publisher pub_grid = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar",1);
+	ros::Publisher pub_cloud_obstacles = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points/renamed_frame/obstacles",1);
+	ros::Publisher pub_cloud_ground = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points/renamed_frame/ground",1);
+	
+	/*variables*/
+	
+	/*initialization*/
+	grid_initialization();
+
+	/*loop*/
+	ros::Rate loop_rate(40);
+	while(ros::ok()){
+		ros::spinOnce();
+		if(!cloud_ground->points.empty() && !cloud_obstacles->points.empty()){
+			input_grid();
+			
+			sensor_msgs::PointCloud2 cloud_obstacles_;
+			pcl::toROSMsg(*cloud_obstacles, cloud_obstacles_);
+			cloud_obstacles_.header.frame_id = cloud->header.frame_id;
+			pub_cloud_obstacles.publish(cloud_obstacles_);
+			
+			sensor_msgs::PointCloud2 cloud_ground_;
+			pcl::toROSMsg(*cloud_ground, cloud_ground_);
+			cloud_ground_.header.frame_id = cloud->header.frame_id;
+			pub_cloud_ground.publish(cloud_ground_);
+		
+			pub_grid.publish(grid);
+		}
+		loop_rate.sleep();
+	}
 }
