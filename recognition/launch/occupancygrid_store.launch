@@ -44,7 +44,8 @@
 		<param name="target" type="string" value="localmap"/>
 	</node>
 
-    <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/>
+    <!-- <node pkg="infant_recognition" type="occupancygrid_lidar" name="occupancygrid_lidar" output="screen"/> -->
+    <node pkg="infant_recognition" type="occupancygrid_lidar_" name="occupancygrid_lidar_" output="screen"/>
     <node pkg="infant_recognition" type="occupancygrid_store_" name="occupancygrid_store_" output="screen"/>
 
 	<node pkg="velodyne_height_map" type="rm_ground_node_minmax" name="rm_ground"/>

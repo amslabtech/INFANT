@@ -83,6 +83,7 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	pub_stamp = msg->header.stamp;
 
 	InputGrid();
+	Publication();
 }
 
 void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &msg)
