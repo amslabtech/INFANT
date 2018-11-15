@@ -19,7 +19,7 @@ pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_ground (new pcl::PointCloud<pcl
 nav_msgs::OccupancyGrid grid;
 const double w = 20.0;	//x[m]
 const double h = 20.0;	//y[m]
-const double resolution = 0.2;	//y[m]
+const double resolution = 0.2;	//[m]
 // std::vector<double> fitting_errors;
 std::string grid_frame_id;
 
