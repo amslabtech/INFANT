@@ -17,6 +17,7 @@ class OccupancyGridStore{
 		double theta;
 		double delta_x;
 		double delta_y;
+		int count_same_odom;
 		/*flags*/
 		bool first_callback_grid = true;
 		bool first_callback_odom = true;
@@ -48,6 +49,7 @@ OccupancyGridStore::OccupancyGridStore()
 	theta = 0.0;
 	delta_x = 0.0;
 	delta_y = 0.0;
+	count_same_odom = 0;
 }
 
 void OccupancyGridStore::CallbackGrid(const nav_msgs::OccupancyGridConstPtr& msg)
@@ -68,6 +70,11 @@ void OccupancyGridStore::CallbackGrid(const nav_msgs::OccupancyGridConstPtr& msg
 
 void OccupancyGridStore::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
 {
+	bool encoder_works = true;
+	if(msg->twist.twist.linear.x>1.0e-3 && fabs(msg->twist.twist.linear.x-odom.twist.twist.linear.x)<1.0e-3)	count_same_odom++;
+	else	count_same_odom = 0;
+	if(count_same_odom>5)	encoder_works = false;
+
 	odom = *msg;
 
 	time_odom_now = ros::Time::now();
@@ -85,7 +92,7 @@ void OccupancyGridStore::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
 	}
 
 	if(!first_callback_grid && !grid.data.empty()){
-        MoveCells(dt);
+        if(encoder_works)	MoveCells(dt);
 	    Publication();
     }
 	
