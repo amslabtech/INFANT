@@ -2,7 +2,7 @@
 <launch>
 	<node name="speed_control" pkg="infant_planning" type="speed_control" />
 	<node name="trajectory_manager" pkg="infant_planning" type="trajectory_manager" />
-		<!-- <remap from="local_goal" to="local_goal_oishi" /> -->
+		<remap from="local_goal" to="local_goal_oishi" />
 	<!-- </node> -->
 
 	<node name="generate_server" pkg="infant_planning" type="generate_server" />
