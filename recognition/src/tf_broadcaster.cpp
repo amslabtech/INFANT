@@ -1,46 +1,106 @@
-
 #include <tf/transform_broadcaster.h>
 #include <tf/tf.h>
 #include <nav_msgs/Odometry.h>
 
-ros::Time time_now_odom;
-ros::Time time_last_odom;
-nav_msgs::Odometry odom;
-bool first_callback_odom = true;
-double theta = 0.0;
+class TFBroadCaster{
+	private:
+		ros::NodeHandle nh;
+		/*subscribe*/
+		ros::Subscriber sub_odom;
+		/*objects*/
+		tf::TransformBroadcaster broadcaster;
+		nav_msgs::Odometry odom;
+		double theta;
+		int count_same_odom;
+		/*flags*/
+		bool first_callback_odom = true;
+		/*time*/
+		ros::Time time_odom_now;
+		ros::Time time_odom_last;
+	public:
+		TFBroadCaster();
+		void MainRoop(void);
+		void InitializeOdom(nav_msgs::Odometry& odom);
+		void CallbackOdom(const nav_msgs::OdometryConstPtr& msg);
+		void Broadcast1(void);
+		void Broadcast2(void);
+		void Broadcast3(void);
+};
 
-void callback_odom(const nav_msgs::OdometryConstPtr& msg)
+TFBroadCaster::TFBroadCaster()
 {
-	std::cout << "CALLBACK ODOM" << std::endl;
-	// odom = *msg;
-	
-	time_now_odom = ros::Time::now();
-	double dt = (time_now_odom - time_last_odom).toSec();
-	time_last_odom = time_now_odom;
+	InitializeOdom(odom);
+	sub_odom = nh.subscribe("/tinypower/odom", 1, &TFBroadCaster::CallbackOdom, this);
+	theta = 0.0;
+	count_same_odom = 0;
+	MainRoop();
+}
+
+void TFBroadCaster::MainRoop(void)
+{
+	ros::Rate loop_rate(100);
+	while(ros::ok()){
+		ros::spinOnce();
+		if(!first_callback_odom){
+			Broadcast1();
+			Broadcast2();
+			Broadcast3();
+		}
+		loop_rate.sleep();
+	}
+}
+
+void TFBroadCaster::InitializeOdom(nav_msgs::Odometry& odom)
+{
+	odom.header.frame_id = "/odom";
+	odom.child_frame_id = "/velodyne_odom";
+	odom.pose.pose.position.x = 0.0;
+	odom.pose.pose.position.y = 0.0;
+	odom.pose.pose.position.z = 0.0;
+	odom.pose.pose.orientation.x = 0.0;
+	odom.pose.pose.orientation.y = 0.0;
+	odom.pose.pose.orientation.z = 0.0;
+	odom.pose.pose.orientation.w = 1.0;
+}
+
+void TFBroadCaster::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
+{
+	bool encoder_works = true;
+	if(msg->twist.twist.linear.x>1.0e-3 && fabs(msg->twist.twist.linear.x-odom.twist.twist.linear.x)<1.0e-3)	count_same_odom++;
+	else	count_same_odom = 0;
+	if(count_same_odom>5)	encoder_works = false;
+
+	odom = *msg;
+
+	time_odom_now = ros::Time::now();
+	double dt = (time_odom_now - time_odom_last).toSec();
+	time_odom_last = time_odom_now;
 	if(first_callback_odom)	dt = 0.0;
 
-	theta += msg->twist.twist.angular.z*dt;
-	if(theta<-M_PI)   theta += 2*M_PI;
-	if(theta>M_PI)    theta -= 2*M_PI;
+	if(encoder_works){
+		theta += msg->twist.twist.angular.z*dt;
+		if(theta<-M_PI)   theta += 2*M_PI;
+		if(theta>M_PI)    theta -= 2*M_PI;
 
-	odom.header.stamp = msg->header.stamp;
-	odom.pose.pose.position.x += msg->twist.twist.linear.x*dt * cos(theta);
-	odom.pose.pose.position.y += msg->twist.twist.linear.x*dt * sin(theta);
-	odom.pose.pose.position.z = 0.0;
+		odom.header.stamp = msg->header.stamp;
+		odom.pose.pose.position.x += msg->twist.twist.linear.x*dt * cos(theta);
+		odom.pose.pose.position.y += msg->twist.twist.linear.x*dt * sin(theta);
+		odom.pose.pose.position.z = 0.0;
 
-	tf::Quaternion q = tf::createQuaternionFromRPY(0.0, 0.0, theta);
-	quaternionTFToMsg(q, odom.pose.pose.orientation);
+		tf::Quaternion q = tf::createQuaternionFromRPY(0.0, 0.0, theta);
+		quaternionTFToMsg(q, odom.pose.pose.orientation);
+	}
+
+	// Broadcast1();
+	// Broadcast2();
+	// Broadcast3();
 
 	first_callback_odom = false;
 }
 
-void tf_broadcaster1(void)
+void TFBroadCaster::Broadcast1(void)
 {
-	std::cout << "TF1" << std::endl;
-	
-	static tf::TransformBroadcaster broadcaster;
 	geometry_msgs::TransformStamped transform;
-	// transform.header.stamp = ros::Time::now();
 	transform.header.stamp = odom.header.stamp;
 	transform.header.frame_id = "/odom";
 	transform.child_frame_id = "/velodyne_odom";
@@ -51,11 +111,9 @@ void tf_broadcaster1(void)
 	broadcaster.sendTransform(transform);
 }
 
-void tf_broadcaster2(void)
+void TFBroadCaster::Broadcast2(void)
 {
-	static tf::TransformBroadcaster broadcaster;
 	geometry_msgs::TransformStamped transform;
-	// transform.header.stamp = ros::Time::now();
 	transform.header.stamp = odom.header.stamp;
 	transform.header.frame_id = "/odom";
 	transform.child_frame_id = "/localmap";
@@ -69,11 +127,9 @@ void tf_broadcaster2(void)
 	broadcaster.sendTransform(transform);
 }
 
-void tf_broadcaster3(void)
+void TFBroadCaster::Broadcast3(void)
 {
-	static tf::TransformBroadcaster broadcaster;
 	geometry_msgs::TransformStamped transform;
-	// transform.header.stamp = ros::Time::now();
 	transform.header.stamp = odom.header.stamp;
 	transform.header.frame_id = "/velodyne_odom";
 	transform.child_frame_id = "/zed";
@@ -87,38 +143,11 @@ void tf_broadcaster3(void)
 	broadcaster.sendTransform(transform);
 }
 
-void initialize_odom(nav_msgs::Odometry& odom)
-{
-	odom.header.frame_id = "/odom";
-	odom.child_frame_id = "/velodyne_odom";
-	odom.pose.pose.position.x = 0.0;
-	odom.pose.pose.position.y = 0.0;
-	odom.pose.pose.position.z = 0.0;
-	odom.pose.pose.orientation.x = 0.0;
-	odom.pose.pose.orientation.y = 0.0;
-	odom.pose.pose.orientation.z = 0.0;
-	odom.pose.pose.orientation.w = 1.0;
-}
-
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "tf_broadcaster");
-	ros::NodeHandle nh;
 
-	ros::Subscriber sub_odom = nh.subscribe("/tinypower/odom", 1, callback_odom);
+	TFBroadCaster tf_broadcaster;
 
-	time_now_odom = ros::Time::now();
-	time_last_odom = ros::Time::now();
-	initialize_odom(odom);
-
-	ros::Rate loop_rate(100);
-	while(ros::ok()){
-		ros::spinOnce();
-		if(!first_callback_odom){
-			tf_broadcaster1();
-			tf_broadcaster2();
-			tf_broadcaster3();
-		}
-		loop_rate.sleep();
-	}
+	// ros::spin();
 }
