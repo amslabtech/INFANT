@@ -1,7 +1,7 @@
 [Unit]
 Description=tiny launcher
-After=ros_roscore.service dev-Tiny.device
-Requires=ros_roscore.service dev-Tiny.device
+After=ros_roscore.service dev-tiny.device
+Requires=ros_roscore.service dev-tiny.device
 
 [Service]
 User=amsl

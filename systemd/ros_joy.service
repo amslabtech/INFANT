@@ -1,7 +1,7 @@
 [Unit]
 Description=joy launcher
-After=ros_roscore.service dev-PS3joy.device
-Requires=ros_roscore.service dev-PS3joy.device
+After=ros_roscore.service dev-ps3joy.device
+Requires=ros_roscore.service
 
 [Service]
 User=amsl
