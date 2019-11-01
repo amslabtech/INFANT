@@ -1,0 +1,14 @@
+[Unit]
+Description=imu launcher
+After=ros_roscore.service dev-USBxsens.device
+Requires=ros_roscore.service dev-USBxsens.device
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S imu -ADm bash -l -c 'roslaunch xsens_driver xsens_driver.launch --screen --wait'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

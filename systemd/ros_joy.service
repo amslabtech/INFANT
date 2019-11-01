@@ -1,0 +1,14 @@
+[Unit]
+Description=joy launcher
+After=ros_roscore.service dev-PS3joy.device
+Requires=ros_roscore.service dev-PS3joy.device
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S joy -ADm bash -l -c 'rosrun joy joy_node _dev:=/dev/PS3joy'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

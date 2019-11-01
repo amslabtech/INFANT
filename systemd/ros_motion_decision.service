@@ -1,0 +1,14 @@
+[Unit]
+Description=motion decision launcher
+After=ros_roscore.service
+Requires=ros_roscore.service
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S motion_decision -ADm bash -l -c 'roslaunch motion_decision motion_decision.launch --screen --wait'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

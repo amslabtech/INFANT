@@ -1,0 +1,14 @@
+[Unit]
+Description=tiny launcher
+After=ros_roscore.service dev-Tiny.device
+Requires=ros_roscore.service dev-Tiny.device
+
+[Service]
+User=amsl
+ExecStart=/usr/bin/screen -S tiny -ADm bash -l -c 'rosrun knm_tiny_power tiny_revival.py'
+Type=simple
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target
