@@ -1,1 +1,1 @@
-# INFANT tsukuba challenge 2018
+# INFANT
