@@ -1,11 +1,19 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="rviz" default="false"/>
+
+  <node pkg="joy" type="joy_node" name="joy_node"/>
   <node pkg="knm_tiny_power" type="tiny_revival.py" name="tiny_power"/>
+  <include file="$(find motion_decision)/launch/motion_decision.launch"/>
 
   <include file="$(find infant)/launch/front_laser.launch"/>
   <include file="$(find infant)/launch/rear_laser.launch"/>
   <include file="$(find infant)/launch/front_camera.launch"/>
 
+  <include file="$(find infant)/launch/robot_state.launch"/>
+
   <include file="$(find xsens_driver)/launch/xsens_driver.launch"/>
   <include file="$(find velodyne_pointcloud)/launch/32e_points.launch"/>
+
+  <node pkg="rviz" type="rviz" name="infant_rviz" args="-d $(find infant)/config/infant.rviz" if="$(arg rviz)"/>
 </launch>
