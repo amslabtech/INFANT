@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+   <node pkg="tf" type="static_transform_publisher" name="tf_front_camera_base_link" args="0 0 0 0 0 0 /base_link /front_camera 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_front_laser_base_link" args="0 0 0 0 0 0 /base_link /front_laser 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_rear_laser_base_link" args="0 0 0 0 0 0 /base_link /rear_laser 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_velodyne_base_link" args="0 0 0 0 0 0 /base_link /velodyne 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_imu_base_link" args="0 0 0 0 0 0 /base_link /imu_link 100"/>
+</launch>
