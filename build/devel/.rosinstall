@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/amsl/catkin_ws/src/INFANT/build/devel/setup.sh
