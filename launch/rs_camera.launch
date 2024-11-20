@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="serial_no" default=""/>
+    <arg name="camera_name" default="camera"/>
+    <arg name="enable_depth" default="false"/>
+    <arg name="tf_name" default="camera"/>
+
+    <param name="realsense/aligned_depth_to_color/image_raw/compressed/format" value="png" />
+    <param name="realsense/aligned_depth_to_color/image_raw/compressed/png_level" value="5" />
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+        <arg name="serial_no" value="$(arg serial_no)"/>
+        <arg name="camera" value="$(arg camera_name)"/>
+        <arg name="enable_depth" value="$(arg enable_depth)"/>
+        <arg name="align_depth" value="$(arg enable_depth)"/>
+        <arg name="filters" value="disparity,temporal" />
+        <arg name="enable_pointcloud" value="true"/>
+        <arg name="enable_gyro" value="true"/>
+        <arg name="enable_accel" value="true"/>
+        <arg name="unite_imu_method" value="linear_interpolation"/>
+        <arg name="tf_prefix" value="$(arg tf_name)"/>
+        <arg name="color_fps" value="30"/>
+        <arg name="color_width" value="1280"/>
+        <arg name="color_height" value="720"/>
+        <arg name="depth_fps" value="30"/>
+        <arg name="depth_width" value="1280"/>
+        <arg name="depth_height" value="720"/>
+    </include>
+</launch>
+

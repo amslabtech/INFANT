@@ -6,18 +6,18 @@
     <include file="$(find infant)/launch/infant_hardware.launch" />
 
     <!-- joy node-->
-    <node pkg="joy" type="joy_node" name="joy_node">
-        <param name="_dev" type="string" value="/dev/PS3joy"/>
-    </node>
+    <node pkg="joy" type="joy_node" name="joy_node"/>
 
     <!-- motion decision-->
-    <include file="$(find motion_decision)/launch/motion_decision.launch"/>
-    <!-- motor driver-->
-    <node pkg="tinypower_driver" type="tinypower_driver" name="tinypower_driver" output="screen"/>
-    <!-- imu -->
-    <include file="$(find xsense_driver)/launch/xsense_driver.launch"/>
+    <include file="$(find motion_decision)/launch/motion_decision.launch">
+        <arg name="output" value="screen"/>
+    </include>
 
+    <!-- motor driver-->
+    <node pkg="tinypower_driver" type="tinypower_driver" name="tinypower_driver" output="screen">
+        <param name="hz" value="30"/>
+    </node>
 </launch>
 
 
-    
+

@@ -1,14 +1,75 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="rviz" default="false"/>
+    <arg name="rviz" default="true"/>
+    <arg name="front_camera" default="front_camera"/>
+    <arg name="ground_camera" default="ground_camera"/>
+    <arg name="front_laser" default="front_laser"/>
+    <arg name="rear_laser" default="rear_laser"/>
 
-  <include file="$(find infant)/launch/front_laser.launch"/>
-  <include file="$(find infant)/launch/rear_laser.launch"/>
-  <include file="$(find infant)/launch/front_camera.launch"/>
+    <!-- front_camera -->
+    <include file="$(find infant)/launch/rs_camera.launch">
+        <arg name="serial_no" value="234222303807"/>
+        <arg name="camera_name" value="$(arg front_camera)"/>
+        <!-- <arg name="enable_depth" value="false"/> -->
+        <arg name="tf_name" value="(arg front_camera)"/>
+    </include>
 
-  <include file="$(find infant)/launch/robot_state.launch"/>
+    <!-- ground_camera -->
+    <include file="$(find infant)/launch/rs_camera.launch">
+        <arg name="serial_no" value="825412070169"/>
+        <arg name="camera_name" value="$(arg ground_camera)"/>
+        <!-- <arg name="enable_depth" value="false"/> -->
+        <arg name="tf_name" value="$(arg ground_camera)"/>
+    </include>
 
-  <include file="$(find velodyne_pointcloud)/launch/32e_points.launch"/>
+    <!-- front 2DLiDAR -->
+    <node pkg="urg_node" type="urg_node" name="$(arg front_laser)" respawn="true">
+        <param name="ip_address" value="192.168.1.21"/>
+        <param name="frame_id" value="$(arg front_laser)"/>
+        <param name="angle_min" value="-3.14"/>
+        <param name="angle_max" value="3.14"/>
+        <remap from="scan" to="/$(arg front_laser)/scan"/>
+    </node>
 
-  <node pkg="rviz" type="rviz" name="infant_rviz" args="-d $(find infant)/config/infant.rviz" if="$(arg rviz)"/>
+    <!-- rear 2DLiDAR -->
+    <node pkg="urg_node" type="urg_node" name="$(arg rear_laser)" respawn="true">
+        <param name="ip_address" value="192.168.1.20"/>
+        <param name="frame_id" value="$(arg rear_laser)"/>
+        <param name="angle_min" value="-1.0"/>
+        <param name="angle_max" value="1.0"/>
+        <remap from="scan" to="/$(arg rear_laser)/scan"/>
+    </node>
+
+    <!-- front 2DLiDAR inverse -->
+    <node pkg="amsl_navigation_utils" type="scan_invertor" name="scan_invertor" respawn="true">
+        <remap from="scan" to="/$(arg front_laser)/scan"/>
+        <remap from="/scan/inverse" to="/$(arg front_laser)/scan/inverse"/>
+    </node>
+
+    <!-- 3DLiDAR -->
+    <include file="$(find velodyne_pointcloud)/launch/32e_points.launch"/>
+
+    <!-- IMU -->
+    <include file="$(find rt_usb_9axisimu_driver)/launch/rt_usb_9axisimu_driver.launch"/>
+    <!-- <node pkg="xsens_mti_driver" type="xsens_mti_node" name="xsens_mti_node" respawn="true"> -->
+    <!--     <rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml"/> -->
+    <!--     <remap from="imu/data" to="imu/data_raw"/> -->
+    <!-- </node> -->
+
+    <!-- IMU TF -->
+    <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer" respawn="true">
+        <remap from="imu_in/data" to="imu/data_raw"/>
+        <remap from="imu_out/data" to="imu/data"/>
+        <param name="target_frame" value="base_link"/>
+    </node>
+
+    <!-- TF -->
+    <include file="$(find infant)/launch/robot_state.launch">
+        <arg name="front_camera_link" value="$(arg front_camera)_link"/>
+        <arg name="ground_camera_link" value="$(arg ground_camera)_link"/>
+        <arg name="front_laser_link" value="$(arg front_laser)"/>
+        <arg name="rear_laser_link" value="$(arg rear_laser)"/>
+    </include>
+
+    <node pkg="rviz" type="rviz" name="infant_rviz" args="-d $(find infant)/config/infant.rviz" if="$(arg rviz)"/>
 </launch>
