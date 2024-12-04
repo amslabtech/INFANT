@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="rviz" default="true"/>
+    <arg name="rviz" default="false"/>
     <arg name="front_camera" default="front_camera"/>
     <arg name="ground_camera" default="ground_camera"/>
     <arg name="front_laser" default="front_laser"/>
@@ -26,8 +26,8 @@
     <node pkg="urg_node" type="urg_node" name="$(arg front_laser)" respawn="true">
         <param name="ip_address" value="192.168.1.21"/>
         <param name="frame_id" value="$(arg front_laser)"/>
-        <param name="angle_min" value="-3.14"/>
-        <param name="angle_max" value="3.14"/>
+        <param name="angle_min" value="-1.57"/>
+        <param name="angle_max" value="1.57"/>
         <remap from="scan" to="/$(arg front_laser)/scan"/>
     </node>
 
@@ -35,8 +35,8 @@
     <node pkg="urg_node" type="urg_node" name="$(arg rear_laser)" respawn="true">
         <param name="ip_address" value="192.168.1.20"/>
         <param name="frame_id" value="$(arg rear_laser)"/>
-        <param name="angle_min" value="-1.0"/>
-        <param name="angle_max" value="1.0"/>
+        <param name="angle_min" value="-1.57"/>
+        <param name="angle_max" value="1.57"/>
         <remap from="scan" to="/$(arg rear_laser)/scan"/>
     </node>
 

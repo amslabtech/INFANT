@@ -7,8 +7,8 @@
 
    <node pkg="tf2_ros" type="static_transform_publisher" name="tf_front_camera_base_link" args="0 0 1.2 0 0 0 base_link $(arg front_camera_link)"/>
    <node pkg="tf2_ros" type="static_transform_publisher" name="tf_ground_camera_base_link" args="0.30 0 0.80 0 0 0 base_link $(arg ground_camera_link)"/>
-   <node pkg="tf2_ros" type="static_transform_publisher" name="tf_front_laser_base_link" args="0.30 0 0.35 0 0 0 base_link $(arg front_laser_link)"/>
-   <node pkg="tf2_ros" type="static_transform_publisher" name="tf_rear_laser_base_link" args="-0.28 0 0.32 3.14159265 0 0 base_link $(arg rear_laser_link)"/>
+   <node pkg="tf2_ros" type="static_transform_publisher" name="tf_front_laser_base_link" args="0.35 0 0.35 0 0 3.1415927 base_link $(arg front_laser_link)"/>
+   <node pkg="tf2_ros" type="static_transform_publisher" name="tf_rear_laser_base_link" args="-0.28 0 0.32 3.14159267 0 0 base_link $(arg rear_laser_link)"/>
    <node pkg="tf2_ros" type="static_transform_publisher" name="tf_velodyne_base_link" args="0 0 1.3 0 0 0 base_link velodyne"/>
    <node pkg="tf2_ros" type="static_transform_publisher" name="tf_imu_base_link" args="0 0 0.6 0 0 0 base_link imu_link"/>
 </launch>
